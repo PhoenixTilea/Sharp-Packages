@@ -32,6 +32,11 @@ namespace SE.Storage
             }
         }
 
+        public FilterToken this[int index]
+        {
+            get { return nodes[index]; }
+        }
+
         /// <summary>
         /// Creates a new empty Filter
         /// </summary>

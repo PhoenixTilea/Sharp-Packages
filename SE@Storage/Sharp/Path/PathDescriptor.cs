@@ -228,7 +228,7 @@ namespace SE.Storage
         /// that is grouped by this location
         /// </summary>
         /// <param name="subFolder">The location to rebase to this location</param>
-        /// <returns>A short string locationd escriptor</returns>
+        /// <returns>A short string location descriptor</returns>
         public string Rebase(PathDescriptor subFolder)
         {
             return subFolder.GetAbsolutePath().Substring(GetAbsolutePath().Length + 1);

@@ -18,7 +18,14 @@ namespace SE.Storage
         /// </summary>
         public string Pattern
         {
-            get { return pattern; }
+            get
+            {
+                return pattern;
+            }
+            internal set
+            {
+                pattern = value;
+            }
         }
 
         protected FilterToken child;
