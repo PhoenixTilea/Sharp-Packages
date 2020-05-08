@@ -12,7 +12,7 @@ namespace SE.Parallel.Coroutines
     /// Manages 3 way execution locks of handling the condition of a critical section,
     /// completion of the operation and blocking until the barrier resolves
     /// </summary>
-    public class ExecutionBarrier : IReceiver
+    public class ExecutionBarrier : IPromiseNotifier<object>
     {
         private static Dictionary<UInt32, ExecutionBarrier> index;
         private static ReadWriteLock indexerLock;
@@ -48,16 +48,18 @@ namespace SE.Parallel.Coroutines
             guardLock = new ReadWriteLock();
         }
 
-        public void SetError(object host, Exception error)
-        {
-            SetResult(host, error);
-        }
-        public void SetResult(object host, object result)
+        public void OnResolve(object value)
         {
             IExecutionGuard context = Guard;
-            if (context != null) context.Set(result);
-            else TaskScheduler.Start(ResultCarrierLoop(result), true);
+            if (context != null) context.Set(value);
+            else TaskScheduler.Start(ResultCarrierLoop(value), true);
         }
+        public void OnReject(Exception error)
+        {
+            OnResolve(error);
+        }
+        public void OnCompleted()
+        { }
         IEnumerator ResultCarrierLoop(object result)
         {
             while (Guard == null)

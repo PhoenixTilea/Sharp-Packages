@@ -14,9 +14,6 @@ namespace SE.Parallel.Coroutines
     /// </summary>
     public static class TaskScheduler
     {
-        private readonly static Spinlock initializationLock;
-        private static UInt32 initializationCounter;
-
         private static float threadCoverage = 0.5f;
         /// <summary>
         /// Gets or sets the amount of threads reserved from the thread pool
@@ -47,16 +44,17 @@ namespace SE.Parallel.Coroutines
             set { lowPriorityCapacity = value; }
         }
 
-        private static ConcurrentQueue<ThreadScheduler.PoolWorker> suspendedWorker;
-
+        private static atomic_bool mainProcess;
+        private static atomic_int state;
         /// <summary>
         /// Indicates if the pool is currently in use
         /// </summary>
-        public static bool Active
+        public static ThreadSchedulerState State
         {
-            get { return ThreadScheduler.Active; }
+            get { return (ThreadSchedulerState)state.Value; }
         }
 
+        private static ConcurrentQueue<ThreadScheduler.PoolWorker> suspendedWorker;
         private static ConcurrentQueue<ExecutionContext> pendingJobs;
         private static ConcurrentQueue<ExecutionContext> highPriorityJobs;
         private static ConcurrentQueue<ExecutionContext> lowPriorityJobs;
@@ -106,14 +104,10 @@ namespace SE.Parallel.Coroutines
         public static event ThreadExceptionEventHandler ExecutionException;
 
         static TaskScheduler()
-        {
-            initializationLock = new Spinlock();
-            initializationCounter = 0;
-        }
+        { }
 
         private static void Initialize()
         {
-            ThreadScheduler.Acquire();
             suspendedWorker = new ConcurrentQueue<ThreadScheduler.PoolWorker>(((Environment.ProcessorCount * 2) - 1).NextPowerOfTwo());
 
             highPriorityJobs = new ConcurrentQueue<ExecutionContext>(highPriorityCapacity.NextPowerOfTwo());
@@ -121,23 +115,27 @@ namespace SE.Parallel.Coroutines
             pendingJobs = new ConcurrentQueue<ExecutionContext>((highPriorityCapacity + lowPriorityCapacity).NextPowerOfTwo());
 
             threads = 0;
+            mainProcess = true;
             for (int i = (int)(((Environment.ProcessorCount * 2) - 1) * threadCoverage); i > 0; i--)
                 if (ThreadScheduler.Decouple(Iterator))
                     threads++;
+
+            state.Exchange((int)ThreadSchedulerState.Running);
+
+            if (threads == 0)
+                throw new ArgumentOutOfRangeException("ThreadScheduler.Decouple");
         }
         /// <summary>
         /// Initializes the ThreadPool if not already in use
         /// </summary>
-        public static void Acquire()
+        public static bool Acquire()
         {
-            using (ThreadContext.Lock(initializationLock))
+            if (state.CompareExchange((int)ThreadSchedulerState.Initializing, (int)ThreadSchedulerState.Pending) == (int)ThreadSchedulerState.Pending)
             {
-                if (++initializationCounter <= 1)
-                {
-                    Initialize();
-                    initializationCounter = 1;
-                }
+                Initialize();
+                return true;
             }
+            else return false;
         }
 
         private static void Unload()
@@ -147,21 +145,21 @@ namespace SE.Parallel.Coroutines
             highPriorityJobs = null;
             pendingJobs = null;
             suspendedWorker = null;
+
+            state.Exchange((int)ThreadSchedulerState.Pending);
         }
         /// <summary>
         /// Closes the pool and awaits any active worker to shutdown properly if
         /// no longer in use
         /// </summary>
-        public static void Release()
+        public static bool Release()
         {
-            using (ThreadContext.Lock(initializationLock))
+            if (state.CompareExchange((int)ThreadSchedulerState.Initializing, (int)ThreadSchedulerState.Running) == (int)ThreadSchedulerState.Running)
             {
-                if (--initializationCounter <= 0)
-                {
-                    Unload();
-                    initializationCounter = 0;
-                }
+                Unload();
+                return true;
             }
+            else return false;
         }
 
         /// <summary>
@@ -170,20 +168,23 @@ namespace SE.Parallel.Coroutines
         /// <param name="context">The coroutine to be executed</param>
         /// <param name="highPriority">True, if the coroutine should run in higher priority, false otherwise</param>
         /// <returns>True, if the coroutine was successfully enqueued, false otherwise</returns>
-        public static bool Start(IEnumerator context, bool highPriority, IReceiver parent = null)
+        public static bool Start(IEnumerator context, bool highPriority, IPromiseNotifier<object> parent = null)
         {
-            if (suspendedWorker == null)
-                throw new ObjectDisposedException("CoroutineScheduler");
+            Acquire();
 
-            if (!ThreadScheduler.Active)
-                return false;
+            while (State != ThreadSchedulerState.Running)
+                Thread.Sleep(1);
 
-            if (highPriority && !highPriorityJobs.Enqueue(new ExecutionContext(context, parent))) return false;
-            else if (!highPriority && !lowPriorityJobs.Enqueue(new ExecutionContext(context, parent))) return false;
+            try
+            {
+                if (highPriority && !highPriorityJobs.Enqueue(new ExecutionContext(context, parent))) return false;
+                else if (!highPriority && !lowPriorityJobs.Enqueue(new ExecutionContext(context, parent))) return false;
 
-            ThreadScheduler.PoolWorker worker;
-            if (suspendedWorker.Dequeue(out worker)) worker.Awake();
-            return true;
+                ThreadScheduler.PoolWorker worker;
+                if (suspendedWorker.Dequeue(out worker)) worker.Awake();
+                return true;
+            }
+            catch { return false; }
         }
 
         /// <summary>
@@ -195,7 +196,7 @@ namespace SE.Parallel.Coroutines
                 throw new ObjectDisposedException("CoroutineScheduler");
 
             ExecutionContext context = null;
-            if (ThreadScheduler.Active)
+            if (State == ThreadSchedulerState.Running)
             {
                 GetPendingJob(ref context);
                 if (context == null && !highPriorityJobs.Dequeue(out context))
@@ -267,7 +268,8 @@ namespace SE.Parallel.Coroutines
             ThreadScheduler.PoolWorker worker = aArgs as ThreadScheduler.PoolWorker;
             ExecutionContext context = null;
 
-            while (ThreadScheduler.Active)
+            bool isMainProcess = mainProcess.Exchange(false);
+            while (!worker.Detached)
             {
                 bool hasPendingJobs = GetPendingJob(ref context);
                 if (context == null && !highPriorityJobs.Dequeue(out context))
@@ -275,7 +277,7 @@ namespace SE.Parallel.Coroutines
                     if (!lowPriorityJobs.Dequeue(out context))
                     {
                         if (hasPendingJobs) Thread.Sleep(1);
-                        else
+                        else if(!isMainProcess || !ThreadScheduler.Join())
                         {
                             suspendedWorker.Enqueue(worker);
                             worker.Yield();

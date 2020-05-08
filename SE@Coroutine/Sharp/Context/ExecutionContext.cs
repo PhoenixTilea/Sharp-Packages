@@ -11,7 +11,7 @@ namespace SE.Parallel.Coroutines
     /// <summary>
     /// Defines a context used to handle asynchronous execution
     /// </summary>
-    public class ExecutionContext : IReceiver
+    public class ExecutionContext : IPromiseNotifier<object>
     {
         private static Dictionary<Int32, ExecutionContext> contextScopes;
         private static ReadWriteLock contextLock;
@@ -38,7 +38,7 @@ namespace SE.Parallel.Coroutines
         }
 
         Stack<IEnumerator> stack = new Stack<IEnumerator>();
-        IReceiver parent;
+        IPromiseNotifier<object> parent;
 
         IEnumerator active;
         /// <summary>
@@ -103,7 +103,7 @@ namespace SE.Parallel.Coroutines
         /// </summary>
         /// <param name="handle">The coroutine handle to execute</param>
         /// <param name="parent">A parent to notify on completion</param>
-        public ExecutionContext(IEnumerator handle, IReceiver parent)
+        public ExecutionContext(IEnumerator handle, IPromiseNotifier<object> parent)
         {
             this.active = handle;
             this.parent = parent;
@@ -212,31 +212,31 @@ namespace SE.Parallel.Coroutines
                         case ExecutionFlags.Completed:
                             {
                                 if (parent != null)
-                                    parent.SetResult(this, result);
+                                    parent.OnResolve(result);
                             }
                             break;
                         case ExecutionFlags.Failed:
                             {
                                 if (parent != null)
-                                    parent.SetError(this, lastError);
+                                    parent.OnReject(lastError);
                             }
                             break;
                     }
                 }
         }
 
-        public void SetResult(object host, object result)
+        public void OnResolve(object value)
         {
             using (ThreadContext.ReadLock(stateLock))
             {
                 if (state.Flag == ExecutionFlags.Pending)
                 {
-                    this.result = result;
+                    this.result = value;
                     state.Signal();
                 }
             }
         }
-        public void SetError(object host, Exception error)
+        public void OnReject(Exception error)
         {
             using (ThreadContext.ReadLock(stateLock))
             {
@@ -247,6 +247,8 @@ namespace SE.Parallel.Coroutines
                 }
             }
         }
+        public void OnCompleted()
+        { }
 
         /// <summary>
         /// Evaluates if current stack is executed as coroutine and returns the active

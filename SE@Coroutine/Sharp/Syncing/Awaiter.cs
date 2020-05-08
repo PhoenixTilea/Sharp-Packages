@@ -10,7 +10,7 @@ namespace SE.Parallel.Coroutines
     /// <summary>
     /// An awaiter to be used as coroutine parent
     /// </summary>
-    public class Awaiter : IReceiver
+    public class Awaiter : IPromiseNotifier<object>
     {
         ReadWriteLock stateLock = new ReadWriteLock();
         ExecutionState state;
@@ -37,17 +37,17 @@ namespace SE.Parallel.Coroutines
         public Awaiter()
         { }
 
-        public void SetResult(object host, object result)
+        public void OnResolve(object value)
         {
             using (ThreadContext.ReadLock(stateLock))
             {
-                this.result = result;
+                this.result = value;
 
                 if (state == null) returnCounter.Increment();
                 else state.Signal();
             }
         }
-        public void SetError(object host, Exception error)
+        public void OnReject(Exception error)
         {
             using (ThreadContext.ReadLock(stateLock))
             {
