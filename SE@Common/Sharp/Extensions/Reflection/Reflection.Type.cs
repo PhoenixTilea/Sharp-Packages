@@ -58,5 +58,27 @@ namespace SE
 
             return types;
         }
+
+        /// <summary>
+        /// Walks the inheritance chain of this type and tries to find a desired base
+        /// </summary>
+        /// <param name="desiredBase">A base type this type is inheriting from</param>
+        /// <returns>The type that first inherited the desired base if available, this type otherwise</returns>
+        public static Type GetType(this Type type, Type desiredBase)
+        {
+            while (desiredBase.IsAssignableFrom(type.BaseType))
+                type = type.BaseType;
+
+            return type;
+        }
+        /// <summary>
+        /// Walks the inheritance chain of this type and tries to find a desired base
+        /// </summary>
+        /// <param name="desiredBase">A base type this type is inheriting from</param>
+        /// <returns>The type that first inherited the desired base if available, this type otherwise</returns>
+        public static Type GetType<T>(this Type type)
+        {
+            return GetType(type, typeof(T));
+        }
     }
 }

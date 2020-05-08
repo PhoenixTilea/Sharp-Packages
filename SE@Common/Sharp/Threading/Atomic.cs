@@ -10,6 +10,80 @@ namespace SE
     /// <summary>
     /// A data container to guarantee thread-safe read/ write behavior
     /// </summary>
+    public struct atomic_bool
+    {
+        int rawValue;
+        /// <summary>
+        /// Gets or sets the contained data thread-safe
+        /// </summary>
+        public bool Value
+        {
+            get { return (Interlocked.CompareExchange(ref rawValue, default(int), default(int)) == 1); }
+            set { Interlocked.Exchange(ref rawValue, (value) ? 1 : 0); }
+        }
+
+        /// <summary>
+        /// Gets or sets the contained data unsafe
+        /// </summary>
+        public bool UnsafeValue
+        {
+            get { return (rawValue == 1); }
+            set { rawValue = ((value) ? 1 : 0); }
+        }
+
+        /// <summary>
+        /// Creates a new thread-safe Int32 instance
+        /// </summary>
+        public atomic_bool(bool value)
+        {
+            this.rawValue = ((value) ? 1 : 0);
+        }
+
+        public static implicit operator atomic_bool(bool value)
+        {
+            return new atomic_bool(value);
+        }
+        public static implicit operator bool(atomic_bool b)
+        {
+            return (b.rawValue == 1);
+        }
+
+        /// <summary>
+        /// Exchanges current value for the provided one
+        /// </summary>
+        /// <returns>The previous value</returns>
+        public bool Exchange(bool value)
+        {
+            return (Interlocked.Exchange(ref rawValue, (value) ? 1 : 0) == 1);
+        }
+
+        /// <summary>
+        /// Exchanges current value for the provided one if it matches comparand
+        /// </summary>
+        /// <returns>The previous value if exchanged successfully, the new value otherwise</returns>
+        public bool CompareExchange(bool value, bool comparand)
+        {
+            return (Interlocked.CompareExchange(ref rawValue, (value) ? 1 : 0, (comparand) ? 1 : 0) == 1);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Value.Equals(obj);
+        }
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+    }
+
+    /// <summary>
+    /// A data container to guarantee thread-safe read/ write behavior
+    /// </summary>
     public struct atomic_int
     {
         Int32 rawValue;
@@ -20,6 +94,15 @@ namespace SE
         {
             get { return Interlocked.CompareExchange(ref rawValue, default(Int32), default(Int32)); }
             set { Interlocked.Exchange(ref rawValue, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the contained data unsafe
+        /// </summary>
+        public Int32 UnsafeValue
+        {
+            get { return rawValue; }
+            set { rawValue = value; }
         }
 
         /// <summary>
@@ -137,6 +220,20 @@ namespace SE
         {
             return Interlocked.CompareExchange(ref rawValue, value, comparand);
         }
+
+        public override bool Equals(object obj)
+        {
+            return Value.Equals(obj);
+        }
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 
     /// <summary>
@@ -152,6 +249,15 @@ namespace SE
         {
             get { return Interlocked.CompareExchange(ref rawValue, default(Int64), default(Int64)); }
             set { Interlocked.Exchange(ref rawValue, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the contained data unsafe
+        /// </summary>
+        public Int64 UnsafeValue
+        {
+            get { return rawValue; }
+            set { rawValue = value; }
         }
 
         /// <summary>
@@ -268,6 +374,94 @@ namespace SE
         public Int64 CompareExchange(Int64 value, Int64 comparand)
         {
             return Interlocked.CompareExchange(ref rawValue, value, comparand);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Value.Equals(obj);
+        }
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+    }
+
+    /// <summary>
+    /// A data container to guarantee thread-safe read/ write behavior
+    /// </summary>
+    public struct atomic_reference<T> where T : class
+    {
+        T rawValue;
+        /// <summary>
+        /// Gets or sets the contained data thread-safe
+        /// </summary>
+        public T Value
+        {
+            get { return Interlocked.CompareExchange<T>(ref rawValue, default(T), default(T)); }
+            set { Interlocked.Exchange<T>(ref rawValue, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the contained data unsafe
+        /// </summary>
+        public T UnsafeValue
+        {
+            get { return rawValue; }
+            set { rawValue = value; }
+        }
+
+        /// <summary>
+        /// Creates a new thread-safe Int32 instance
+        /// </summary>
+        public atomic_reference(T value)
+        {
+            this.rawValue = value;
+        }
+
+        public static implicit operator atomic_reference<T>(T value)
+        {
+            return new atomic_reference<T>(value);
+        }
+        public static implicit operator T(atomic_reference<T> r)
+        {
+            return r.rawValue;
+        }
+
+        /// <summary>
+        /// Exchanges current value for the provided one
+        /// </summary>
+        /// <returns>The previous value</returns>
+        public T Exchange(T value)
+        {
+            return Interlocked.Exchange<T>(ref rawValue, value);
+        }
+
+        /// <summary>
+        /// Exchanges current value for the provided one if it matches comparand
+        /// </summary>
+        /// <returns>The previous value if exchanged successfully, the new value otherwise</returns>
+        public T CompareExchange(T value, T comparand)
+        {
+            return Interlocked.CompareExchange<T>(ref rawValue, value, comparand);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Value.Equals(obj);
+        }
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString();
         }
     }
 }

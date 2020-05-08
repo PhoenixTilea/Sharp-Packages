@@ -10,7 +10,7 @@ namespace SE
     /// <summary>
     /// Provides a combinator for different .Net hash codes
     /// </summary>
-    public class HashCombiner
+    public struct HashCombiner
     {
         const Int64 HashCombinerBias = 0x1505L;
         Int64 combinedHash64;
@@ -26,9 +26,9 @@ namespace SE
         /// <summary>
         /// Creates a new combiner instance
         /// </summary>
-        public HashCombiner()
+        public HashCombiner(Int64 offsetBias)
         {
-            combinedHash64 = HashCombinerBias;
+            this.combinedHash64 = offsetBias;
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace SE
         /// <returns></returns>
         public static HashCombiner Initialize()
         {
-            return new HashCombiner();
+            return new HashCombiner(HashCombinerBias);
         }
     }
 }
