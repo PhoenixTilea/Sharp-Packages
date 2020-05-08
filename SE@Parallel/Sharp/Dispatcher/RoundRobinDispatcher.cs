@@ -24,7 +24,7 @@ namespace SE.Parallel.Processing
 
         public override void Register(Adapter adapter, object action, params object[] options)
         {
-            using (ThreadContext.WriteLock(subscriberLock))
+            using (ThreadContext.WriteLock(subscriptionLock))
             {
                 base.Register(adapter, action, options);
 
@@ -35,12 +35,12 @@ namespace SE.Parallel.Processing
         }
         public override void Remove(Adapter adapter, object action)
         {
-            using (ThreadContext.WriteLock(subscriberLock))
+            using (ThreadContext.WriteLock(subscriptionLock))
             {
                 base.Remove(adapter, action);
 
                 if (action != null)
-                    foreach (Tuple<Adapter, object> target in subscriber)
+                    foreach (Tuple<Adapter, object> target in subscriptions)
                         if (target.Item2 == action)
                             return;
 
@@ -48,25 +48,25 @@ namespace SE.Parallel.Processing
             }
         }
 
-        public override bool Dispatch(IReceiver sender, object[] args)
+        public override bool Dispatch(IPromiseNotifier<object> sender, object[] args)
         {
             Tuple<Adapter, object> first = null;
             Tuple<Adapter, object> target = null;
             AdapterContext ctx = null;
-            using (ThreadContext.ReadLock(subscriberLock))
+            using (ThreadContext.ReadLock(subscriptionLock))
             {
-                if (subscriber.Count == 0)
+                if (subscriptions.Count == 0)
                     return false;
 
-                for (; first == null || subscriber.Comparer.Equals(subscriber.Peek(), first);)
+                for (; first == null || subscriptions.Comparer.Equals(subscriptions.Peek(), first);)
                 {
-                    target = subscriber.Dequeue();
+                    target = subscriptions.Dequeue();
                     if (first == null)
                         first = target;
 
                     if (target != null)
                     {
-                        subscriber.Enqueue(target);
+                        subscriptions.Enqueue(target);
 
                         Func<AdapterContext, bool> flt; if (filter.TryGetValue(target.Item2, out flt))
                         {

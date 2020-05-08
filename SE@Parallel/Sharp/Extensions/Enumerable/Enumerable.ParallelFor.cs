@@ -4,129 +4,78 @@
 using System;
 using System.Collections.Generic;
 using SE;
-using SE.Parallel.Processing;
 
 namespace SE.Parallel
 {
     public static partial class EnumerableExtension
     {
+        struct ParallelContext<T>
+        {
+            EnumerablePromise<T> promise;
+            Action<T> action;
+
+            public ParallelContext(EnumerablePromise<T> promise, Action<T> action)
+            {
+                this.promise = promise;
+                this.action = action;
+            }
+            public void Process(object value)
+            {
+                try
+                {
+                    action((T)value);
+                    promise.OnResolve((T)value);
+                }
+                catch (Exception er)
+                {
+                    promise.OnReject(er);
+                }
+            }
+        }
+
         /// <summary>
         /// Executes an action parallel for each item in the data vector
         /// </summary>
         /// <param name="action">An action to execute</param>
-        /// <returns>The amount of items processed</returns>
-        public static int ParallelFor<T>(this ICollection<T> items, Action<T> action)
+        /// <returns>An awaitable to the asynchronous vectoring operation</returns>
+        public static EnumerablePromise<T> ParallelFor<T>(this ICollection<T> items, Action<T> action, bool highPriority = false)
         {
-            try
-            {
-                ThreadScheduler.Acquire();
-                using (Channel<T> channel = new Channel<T>(new BatchDispatcher()))
-                {
-                    channel.Register(ParallelExtension.ParallelAdapter, action);
-                    if (items.Count > 0)
-                    {
-                        using (ThreadPoolAwaiter awaiter = new ThreadPoolAwaiter())
-                        {
-                            foreach (T item in items)
-                            {
-                                while (!channel.Dispatch(awaiter, item))
-                                    ThreadScheduler.Join();
-
-                                awaiter.Increment();
-                            }
-
-                            if (!awaiter.Await())
-                                throw awaiter.Error;
-                            else if (!awaiter.Finished)
-                                throw new System.Threading.ThreadInterruptedException();
-                        }
-                    }
-                }
-                return items.Count;
-            }
-            finally
-            {
-                ThreadScheduler.Release();
-            }
+            return ParallelFor<T>(items as IEnumerable<T>, action, highPriority);
         }
         /// <summary>
         /// Executes an action parallel for each item in the data vector
         /// </summary>
         /// <param name="action">An action to execute</param>
-        /// <returns>The amount of items processed</returns>
-        public static int ParallelFor<T>(this T[] items, Action<T> action)
+        /// <returns>An awaitable to the asynchronous vectoring operation</returns>
+        public static EnumerablePromise<T> ParallelFor<T>(this T[] items, Action<T> action, bool highPriority = false)
         {
-            try
-            {
-                ThreadScheduler.Acquire();
-                using (Channel<T> channel = new Channel<T>(new BatchDispatcher()))
-                {
-                    channel.Register(ParallelExtension.ParallelAdapter, action);
-                    if (items.Length > 0)
-                    {
-                        using (ThreadPoolAwaiter awaiter = new ThreadPoolAwaiter())
-                        {
-                            foreach (T item in items)
-                            {
-                                while (!channel.Dispatch(awaiter, item))
-                                    ThreadScheduler.Join();
-
-                                awaiter.Increment();
-                            }
-
-                            if (!awaiter.Await())
-                                throw awaiter.Error;
-                            else if (!awaiter.Finished)
-                                throw new System.Threading.ThreadInterruptedException();
-                        }
-                    }
-                }
-                return items.Length;
-            }
-            finally
-            {
-                ThreadScheduler.Release();
-            }
+            return ParallelFor<T>(items as IEnumerable<T>, action, highPriority);
         }
         /// <summary>
         /// Executes an action parallel for each item in the data vector
         /// </summary>
         /// <param name="action">An action to execute</param>
-        /// <returns>The amount of items processed</returns>
-        public static int ParallelFor<T>(this IEnumerable<T> items, Action<T> action)
+        /// <returns>An awaitable to the asynchronous vectoring operation</returns>
+        public static EnumerablePromise<T> ParallelFor<T>(this IEnumerable<T> items, Action<T> action, bool highPriority = false)
         {
-            int count = 0;
-
+            EnumerablePromise<T> promise = new EnumerablePromise<T>();
             try
             {
-                ThreadScheduler.Acquire();
-                using (Channel<T> channel = new Channel<T>(new BatchDispatcher()))
+                ParallelContext<T> context = new ParallelContext<T>(promise, action);
+                foreach (T item in items)
                 {
-                    channel.Register(ParallelExtension.ParallelAdapter, action);
-                    using (ThreadPoolAwaiter awaiter = new ThreadPoolAwaiter())
-                    {
-                        foreach (T item in items)
-                        {
-                            while (!channel.Dispatch(awaiter, item))
-                                ThreadScheduler.Join();
+                    promise.Increment();
 
-                            awaiter.Increment();
-                            count++;
-                        }
-
-                        if (!awaiter.Await())
-                            throw awaiter.Error;
-                        else if (!awaiter.Finished)
-                            throw new System.Threading.ThreadInterruptedException();
-                    }
+                    while (!ThreadScheduler.Start(context.Process, item, highPriority))
+                        ThreadScheduler.Join();
                 }
-
-                return count;
+                promise.OnResolve();
             }
-            finally
+            catch (Exception er)
             {
-                ThreadScheduler.Release();
+                promise.OnReject(er);
             }
+            return promise;
         }
     }
 }

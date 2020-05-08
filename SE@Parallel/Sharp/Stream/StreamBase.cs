@@ -8,14 +8,14 @@ using SE;
 namespace SE.Parallel.Processing
 {
     /// <summary>
-    /// Routes incomming tasks to attached Adapter
+    /// Routes incoming tasks to attached Adapter
     /// </summary>
-    public abstract class ChannelBase : IDisposable
+    public abstract class StreamBase : IDisposable
     {
         protected IDispatcher dispatcher;
 
         /// <summary>
-        /// Ammount of attached Adapter instances
+        /// Amount of attached Adapter instances
         /// </summary>
         public int Count
         {
@@ -25,7 +25,7 @@ namespace SE.Parallel.Processing
         /// <summary>
         /// Creates a new channel with defined dispatching strategy
         /// </summary>
-        public ChannelBase(IDispatcher dispatcher)
+        public StreamBase(IDispatcher dispatcher)
         {
             this.dispatcher = dispatcher;
             (dispatcher as IDispatcherInternal).Owner = this;
@@ -38,7 +38,7 @@ namespace SE.Parallel.Processing
         /// <param name="args">An array of function arguments</param>
         /// <param name="sender">The recipient of execution results</param>
         /// <returns>A channel specific context</returns>
-        public abstract AdapterContext GetContext(object action, object[] args, IReceiver sender);
+        public abstract AdapterContext GetContext(object action, object[] args, IPromiseNotifier<object> sender);
 
         /// <summary>
         /// Stops an Adapter from listening to this Channel

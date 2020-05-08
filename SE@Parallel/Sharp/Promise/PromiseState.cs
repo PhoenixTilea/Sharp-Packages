@@ -5,16 +5,15 @@ using System;
 using System.Collections.Generic;
 using SE;
 
-namespace SE.Parallel.Processing
+namespace SE.Parallel
 {
     /// <summary>
-    /// For internal use only
+    /// Specifies the state of a promise.
     /// </summary>
-    internal interface IDispatcherInternal
+    public enum PromiseState : byte
     {
-        /// <summary>
-        /// Called by ChannelBase constructor
-        /// </summary>
-        StreamBase Owner { set; }
+        Resolved = 0,
+        Pending = 1,
+        Rejected = 2
     }
 }

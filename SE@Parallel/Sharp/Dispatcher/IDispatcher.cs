@@ -18,7 +18,7 @@ namespace SE.Parallel.Processing
         int Count { get; }
 
         /// <summary>
-        /// Registeres a new subscriber based on the channel
+        /// Registers a new subscriber based on the channel
         /// </summary>
         /// <param name="adapter">Defines the execution behavior</param>
         /// <param name="action">Defines the execution callback</param>
@@ -43,8 +43,8 @@ namespace SE.Parallel.Processing
         /// </summary>
         /// <param name="sender">The dispatching issuer that also will receive the result, if any</param>
         /// <param name="args">The payload to dispatch</param>
-        /// <returns>True if dispatching was successfull, false otherwise. The sender will potentially receive an error if available</returns>
-        bool Dispatch(IReceiver sender, object[] args);
+        /// <returns>True if dispatching was successful, false otherwise. The sender will potentially receive an error if available</returns>
+        bool Dispatch(IPromiseNotifier<object> sender, object[] args);
 
         /// <summary>
         /// Removes any subscriber from the list of dispatching targets

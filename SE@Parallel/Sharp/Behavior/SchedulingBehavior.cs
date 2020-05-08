@@ -10,7 +10,7 @@ namespace SE.Parallel.Processing
     /// <summary>
     /// Adapter behavior processing multiple task in a thread pool
     /// </summary>
-    public class CustomPoolingBehavior : Behavior
+    public class SchedulingBehavior : Behavior
     {
         protected int bufferSize;
         /// <summary>
@@ -28,7 +28,7 @@ namespace SE.Parallel.Processing
         /// <summary>
         /// Creates a  thread pool behavior to execute tasks
         /// </summary>
-        public CustomPoolingBehavior()
+        public SchedulingBehavior()
         { }
 
         /// <summary>
@@ -54,7 +54,11 @@ namespace SE.Parallel.Processing
             }
             catch (Exception er)
             {
-                if (context != null) context.Sender.SetError(this, er);
+                if (context != null)
+                {
+                    //er.Data.Add(context.Sender, this);
+                    context.Sender.OnReject(er);
+                }
                 else if (Enabled) TrySetState(State, AdapterState.Error);
             }
             return false;

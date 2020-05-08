@@ -24,18 +24,18 @@ namespace SE.Parallel.Processing
 
         public override void Register(Adapter adapter, object action, params object[] options)
         {
-            using (ThreadContext.WriteLock(subscriberLock))
+            using (ThreadContext.WriteLock(subscriptionLock))
             {
-                int index = subscriber.Count;
+                int index = subscriptions.Count;
                 if (options != null && options.Length > 1 && options[1] is int)
                     index = (int)options[1];
 
                 base.Register(adapter, action, options);
-                if (index < subscriber.Count - 1)
+                if (index < subscriptions.Count - 1)
                 {
-                    Tuple<Adapter, object> tmp = subscriber[subscriber.Count - 1];
-                    subscriber.RemoveAt(subscriber.Count - 1);
-                    subscriber.Insert(index, tmp);
+                    Tuple<Adapter, object> tmp = subscriptions[subscriptions.Count - 1];
+                    subscriptions.RemoveAt(subscriptions.Count - 1);
+                    subscriptions.Insert(index, tmp);
                 }
 
                 if (options != null && options.Length > 0 && options[0] is Func<AdapterContext, bool>)
@@ -45,12 +45,12 @@ namespace SE.Parallel.Processing
         }
         public override void Remove(Adapter adapter, object action)
         {
-            using (ThreadContext.WriteLock(subscriberLock))
+            using (ThreadContext.WriteLock(subscriptionLock))
             {
                 base.Remove(adapter, action);
 
                 if (action != null)
-                    foreach (Tuple<Adapter, object> target in subscriber)
+                    foreach (Tuple<Adapter, object> target in subscriptions)
                         if (target.Item2 == action)
                             return;
 
@@ -58,13 +58,13 @@ namespace SE.Parallel.Processing
             }
         }
 
-        public override bool Dispatch(IReceiver sender, object[] args)
+        public override bool Dispatch(IPromiseNotifier<object> sender, object[] args)
         {
             Adapter adapter = null;
             AdapterContext ctx = null;
-            using (ThreadContext.ReadLock(subscriberLock))
+            using (ThreadContext.ReadLock(subscriptionLock))
             {
-                foreach (Tuple<Adapter, object> target in subscriber)
+                foreach (Tuple<Adapter, object> target in subscriptions)
                 {
                     Func<AdapterContext, bool> flt; if (filter.TryGetValue(target.Item2, out flt))
                     {

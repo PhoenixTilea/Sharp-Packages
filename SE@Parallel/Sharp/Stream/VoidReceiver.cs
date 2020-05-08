@@ -10,18 +10,18 @@ namespace SE.Parallel.Processing
     /// <summary>
     /// Default receiver in case of no-return context execution
     /// </summary>
-    public class ShadowReceiver : IReceiver
+    public class EmptyNotifier : IPromiseNotifier<object>
     {
-        public ShadowReceiver()
+        public EmptyNotifier()
         { }
 
-        public void SetError(object host, Exception error)
+        public void OnResolve(object value)
+        { }
+        public void OnReject(Exception error)
         {
             #if DEBUG
             throw error;
             #endif
         }
-        public void SetResult(object host, object result)
-        { }
     }
 }

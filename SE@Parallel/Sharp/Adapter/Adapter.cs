@@ -12,7 +12,8 @@ namespace SE.Parallel.Processing
     /// </summary>
     public class Adapter : IDisposable
     {
-        protected List<ChannelBase> subscriptions;
+        protected List<StreamBase> subscriptions;
+        protected ReadWriteLock subscriptionLock;
         protected Behavior behavior;
 
         /// <summary>
@@ -47,7 +48,8 @@ namespace SE.Parallel.Processing
         /// </summary>
         public Adapter(Behavior behavior)
         {
-            this.subscriptions = new List<ChannelBase>();
+            this.subscriptions = new List<StreamBase>();
+            this.subscriptionLock = new ReadWriteLock();
             this.behavior = behavior;
         }
 
@@ -55,21 +57,25 @@ namespace SE.Parallel.Processing
         /// Starts this Adapter listening to certain channel
         /// </summary>
         /// <param name="channel">A channel to receive tasks from</param>
-        public void Register(ChannelBase channel)
+        public void Register(StreamBase channel)
         {
-            lock (subscriptions)
-                if(subscriptions != null)
+            using (ThreadContext.WriteLock(subscriptionLock))
+            {
+                if (subscriptions != null)
                     subscriptions.Add(channel);
+            }
         }
         /// <summary>
         /// Stops this Adapter listening to certain channel
         /// </summary>
         /// <param name="channel">A channel to stop receive tasks from</param>
-        public void Remove(ChannelBase channel)
+        public void Remove(StreamBase channel)
         {
-            lock (subscriptions)
+            using (ThreadContext.WriteLock(subscriptionLock))
+            {
                 if (subscriptions != null)
                     subscriptions.Remove(channel);
+            }
         }
 
         /// <summary>
@@ -104,12 +110,11 @@ namespace SE.Parallel.Processing
 
         public void Dispose()
         {
-            if(subscriptions != null)
-                lock (subscriptions)
+            if (subscriptions != null)
+                using (ThreadContext.WriteLock(subscriptionLock))
                 {
-                    ICollection<ChannelBase> subs = subscriptions.Clone();
-                    foreach (ChannelBase channel in subs)
-                        channel.Remove(this);
+                    while(subscriptions.Count > 0)
+                        subscriptions[0].Remove(this);
 
                     subscriptions = null;
                 }

@@ -18,7 +18,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<Ret> action, IReceiver sender)
+        public AdapterRequestContext(Func<Ret> action, IPromiseNotifier<object> sender)
             : base(sender)
         {
             this.action = action;
@@ -26,7 +26,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action());
+            sender.OnResolve(action());
         }
     }
     /// <summary>
@@ -40,7 +40,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -48,7 +48,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
     /// <summary>
@@ -62,7 +62,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T0, T1, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T0, T1, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -70,7 +70,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
     /// <summary>
@@ -84,7 +84,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T0, T1, T2, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T0, T1, T2, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -92,7 +92,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
     /// <summary>
@@ -106,7 +106,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T0, T1, T2, T3, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T0, T1, T2, T3, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -114,7 +114,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
     /// <summary>
@@ -128,7 +128,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -136,7 +136,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
     /// <summary>
@@ -150,7 +150,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -158,7 +158,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
     /// <summary>
@@ -172,7 +172,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, T6, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, T6, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -180,7 +180,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
     /// <summary>
@@ -194,7 +194,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, T6, T7, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, T6, T7, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -202,7 +202,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
     /// <summary>
@@ -216,7 +216,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -224,7 +224,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
     /// <summary>
@@ -238,7 +238,7 @@ namespace SE.Parallel.Processing
             get { return action; }
         }
 
-        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, Ret> action, object[] args, IReceiver sender)
+        public AdapterRequestContext(Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, Ret> action, object[] args, IPromiseNotifier<object> sender)
             : base(args, sender)
         {
             this.action = action;
@@ -246,7 +246,7 @@ namespace SE.Parallel.Processing
 
         public override void ExecuteEmbedded()
         {
-            sender.SetResult(this, action.DynamicInvoke(args));
+            sender.OnResolve(action.DynamicInvoke(args));
         }
     }
 }

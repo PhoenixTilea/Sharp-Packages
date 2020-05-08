@@ -10,9 +10,10 @@ namespace SE.Parallel.Processing
     /// <summary>
     /// A context class that manages parallel execution
     /// </summary>
+    [Serializable]
     public abstract class AdapterContext : IDisposable
     {
-        public readonly static ShadowReceiver NullReceiver;
+        public readonly static EmptyNotifier DefaultNotifier;
 
         private static Dictionary<Int32, AdapterContext> executionScopes;
         private static ReadWriteLock contextLock;
@@ -39,11 +40,11 @@ namespace SE.Parallel.Processing
         }
 
         protected atomic_int executionSignal;
-        protected IReceiver sender;
+        protected IPromiseNotifier<object> sender;
         /// <summary>
         /// The receiver to response execution result to
         /// </summary>
-        public IReceiver Sender
+        public IPromiseNotifier<object> Sender
         {
             get { return sender; }
         }
@@ -59,7 +60,7 @@ namespace SE.Parallel.Processing
 
         static AdapterContext()
         {
-            NullReceiver = new ShadowReceiver();
+            DefaultNotifier = new EmptyNotifier();
             executionScopes = new Dictionary<Int32, AdapterContext>(64);
             contextLock = new ReadWriteLock();
         }
@@ -69,7 +70,7 @@ namespace SE.Parallel.Processing
         /// </summary>
         /// <param name="args">An optional set of arguments to pass into the function</param>
         /// <param name="sender">The receiver to response results to</param>
-        public AdapterContext(object[] args, IReceiver sender)
+        public AdapterContext(object[] args, IPromiseNotifier<object> sender)
         {
             this.args = args;
             this.sender = sender;
@@ -78,7 +79,7 @@ namespace SE.Parallel.Processing
         /// Wraps a set of arguments along with a result receiver into an executable context
         /// </summary>
         /// <param name="sender">The receiver to response results to</param>
-        public AdapterContext(IReceiver sender)
+        public AdapterContext(IPromiseNotifier<object> sender)
             : this(new object[0], sender)
         { }
 
@@ -96,8 +97,16 @@ namespace SE.Parallel.Processing
                 }
                 catch (Exception er)
                 {
-                    if (er.InnerException != null) sender.SetError(this, er.InnerException);
-                    else sender.SetError(this, er);
+                    if (er.InnerException != null)
+                    {
+                        //er.InnerException.Data.Add(sender, this);
+                        sender.OnReject(er.InnerException);
+                    }
+                    else
+                    {
+                        //er.Data.Add(sender, this);
+                        sender.OnReject(er);
+                    }
                 }
             Current = parentContext;
         }
@@ -107,25 +116,24 @@ namespace SE.Parallel.Processing
         public abstract void ExecuteEmbedded();
 
         /// <summary>
-        /// Sets this context into silent mode and returns the original
-        /// sender to the caller
+        /// Exchanges this contexts sender for another one
         /// </summary>
-        /// <returns>The original sender before the context became silent</returns>
-        public IReceiver Silence()
+        /// <returns>The sender previously attached to this context</returns>
+        public IPromiseNotifier<object> ExchangeSender(IPromiseNotifier<object> other)
         {
-            IReceiver tmp;
-            lock (this)
-            {
-                tmp = sender;
-                sender = NullReceiver;
-            }
-            return tmp;
+            IPromiseNotifier<object> result = sender;
+            sender = other;
+            return result;
         }
 
         public virtual void Dispose()
         {
             if (executionSignal.CompareExchange(2, 0) == 0)
-                sender.SetError(this, new ObjectDisposedException(GetType().FullName));
+            {
+                Exception er = new ObjectDisposedException(GetType().FullName);
+                //er.InnerException.Data.Add(sender, this);
+                sender.OnReject(er);
+            }
         }
     }
 }

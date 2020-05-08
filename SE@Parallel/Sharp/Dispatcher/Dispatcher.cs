@@ -8,23 +8,23 @@ using SE;
 namespace SE.Parallel.Processing
 {
     /// <summary>
-    /// Dispatches incomming payload to registered subscribers
+    /// Dispatches incoming payload to registered subscribers
     /// </summary>
     /// <typeparam name="ListType">A container type to determine the dispatching order</typeparam>
     public abstract class Dispatcher<ListType> : IDispatcher, IDispatcherInternal where ListType : ICollection<Tuple<Adapter, object>>, new()
     {
-        protected ReadWriteLock subscriberLock;
-        protected ListType subscriber;
+        protected ReadWriteLock subscriptionLock;
+        protected ListType subscriptions;
 
-        protected ChannelBase owner;
+        protected StreamBase owner;
         /// <summary>
         /// The channel this Dispatcher belongs to
         /// </summary>
-        public ChannelBase Owner
+        public StreamBase Owner
         {
             get { return owner; }
         }
-        ChannelBase IDispatcherInternal.Owner
+        StreamBase IDispatcherInternal.Owner
         {
             set { owner = value; }
         }
@@ -33,10 +33,11 @@ namespace SE.Parallel.Processing
         {
             get
             {
-                using (ThreadContext.ReadLock(subscriberLock))
-                    if (subscriber != null)
-                        return subscriber.Count;
-
+                using (ThreadContext.ReadLock(subscriptionLock))
+                {
+                    if (subscriptions != null)
+                        return subscriptions.Count;
+                }
                 return 0;
             }
         }
@@ -46,29 +47,29 @@ namespace SE.Parallel.Processing
         /// </summary>
         public Dispatcher()
         {
-            subscriberLock = new ReadWriteLock();
-            this.subscriber = new ListType();
+            subscriptionLock = new ReadWriteLock();
+            this.subscriptions = new ListType();
         }
 
         public virtual void Register(Adapter adapter, object action, params object[] options)
         {
-            using (ThreadContext.WriteLock(subscriberLock))
-                if (subscriber != null)
+            using (ThreadContext.WriteLock(subscriptionLock))
+                if (subscriptions != null)
                 {
-                    subscriber.Add(new Tuple<Adapter, object>(adapter, action));
+                    subscriptions.Add(new Tuple<Adapter, object>(adapter, action));
                     adapter.Register(owner);
                 }
         }
 
         public virtual void Remove(Adapter adapter, object action)
         {
-            using (ThreadContext.WriteLock(subscriberLock))
-                if (subscriber != null)
+            using (ThreadContext.WriteLock(subscriptionLock))
+                if (subscriptions != null)
                 {
-                    foreach (Tuple<Adapter, object> target in subscriber)
+                    foreach (Tuple<Adapter, object> target in subscriptions)
                         if (target.Item1 == adapter && (action == null || target.Item2 == action))
                         {
-                            subscriber.Remove(target);
+                            subscriptions.Remove(target);
                             adapter.Remove(owner);
                             break;
                         }
@@ -79,29 +80,29 @@ namespace SE.Parallel.Processing
             Remove(adapter, null);
         }
 
-        public abstract bool Dispatch(IReceiver sender, object[] args);
+        public abstract bool Dispatch(IPromiseNotifier<object> sender, object[] args);
 
         public virtual void Clear()
         {
-            using (ThreadContext.WriteLock(subscriberLock))
-                if (subscriber != null)
+            using (ThreadContext.WriteLock(subscriptionLock))
+                if (subscriptions != null)
                 {
-                    foreach (Tuple<Adapter, object> target in subscriber)
+                    foreach (Tuple<Adapter, object> target in subscriptions)
                         target.Item1.Remove(owner);
 
-                    subscriber.Clear();
+                    subscriptions.Clear();
                 }
         }
         public virtual void Dispose()
         {
-            using (ThreadContext.WriteLock(subscriberLock))
-                if (subscriber != null)
+            using (ThreadContext.WriteLock(subscriptionLock))
+                if (subscriptions != null)
                 {
-                    ICollection<Tuple<Adapter, object>> subs = subscriber.Clone();
+                    ICollection<Tuple<Adapter, object>> subs = subscriptions.Clone();
                     foreach (Tuple<Adapter, object> target in subs)
                         target.Item1.Remove(owner);
 
-                    subscriber = default(ListType);
+                    subscriptions = default(ListType);
                 }
         }
     }

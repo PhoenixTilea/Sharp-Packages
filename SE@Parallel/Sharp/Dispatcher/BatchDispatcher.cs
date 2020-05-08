@@ -8,7 +8,7 @@ using SE;
 namespace SE.Parallel.Processing
 {
     /// <summary>
-    /// A list based endpoiint dispatching strategy
+    /// A list based endpoint dispatching strategy
     /// </summary>
     public class BatchDispatcher : Dispatcher<List<Tuple<Adapter, object>>>
     {
@@ -24,7 +24,7 @@ namespace SE.Parallel.Processing
 
         public override void Register(Adapter adapter, object action, params object[] options)
         {
-            using (ThreadContext.WriteLock(subscriberLock))
+            using (ThreadContext.WriteLock(subscriptionLock))
             {
                 base.Register(adapter, action, options);
 
@@ -35,12 +35,12 @@ namespace SE.Parallel.Processing
         }
         public override void Remove(Adapter adapter, object action)
         {
-            using (ThreadContext.WriteLock(subscriberLock))
+            using (ThreadContext.WriteLock(subscriptionLock))
             {
                 base.Remove(adapter, action);
 
                 if (action != null)
-                    foreach (Tuple<Adapter, object> target in subscriber)
+                    foreach (Tuple<Adapter, object> target in subscriptions)
                         if (target.Item2 == action)
                             return;
 
@@ -48,14 +48,14 @@ namespace SE.Parallel.Processing
             }
         }
 
-        public override bool Dispatch(IReceiver sender, object[] args)
+        public override bool Dispatch(IPromiseNotifier<object> sender, object[] args)
         {
             int adapterCount = 0;
             bool result = false;
-            using (ThreadContext.ReadLock(subscriberLock))
+            using (ThreadContext.ReadLock(subscriptionLock))
             {
-                result = subscriber.Count > 0;
-                foreach (Tuple<Adapter, object> target in subscriber)
+                result = subscriptions.Count > 0;
+                foreach (Tuple<Adapter, object> target in subscriptions)
                 {
                     AdapterContext ctx;
                     Func<AdapterContext, bool> flt; if (filter.TryGetValue(target.Item2, out flt))

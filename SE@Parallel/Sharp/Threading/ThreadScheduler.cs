@@ -19,7 +19,17 @@ namespace SE.Parallel
         public class PoolWorker
         {
             Thread baseThread;
-            ConditionVariable signal;
+            SemaphoreSlim @lock;
+            atomic_bool signal;
+
+            bool detached;
+            /// <summary>
+            /// Gets if this thread is detached from the scheduler
+            /// </summary>
+            public bool Detached
+            {
+                get { return detached; }
+            }
 
             /// <summary>
             /// Creates a new worker instance given the default scheduler behavior
@@ -27,7 +37,8 @@ namespace SE.Parallel
             public PoolWorker()
             {
                 this.baseThread = new Thread(ThreadScheduler.Iterator);
-                this.signal = new ConditionVariable();
+                this.@lock = new SemaphoreSlim(0);
+                this.signal = false;
             }
 
             /// <summary>
@@ -43,6 +54,7 @@ namespace SE.Parallel
             /// </summary>
             public void Run()
             {
+                baseThread.IsBackground = true;
                 baseThread.Start(this);
             }
 
@@ -51,8 +63,13 @@ namespace SE.Parallel
             /// </summary>
             public void Await()
             {
-                if(baseThread.ThreadState != ThreadState.Unstarted)
-                    baseThread.Join();
+                detached = true;
+                if (baseThread.ManagedThreadId != Thread.CurrentThread.ManagedThreadId && baseThread.ThreadState != ThreadState.Unstarted)
+                    do
+                    {
+                        Awake();
+                    }
+                    while (baseThread.IsAlive);
             }
 
             /// <summary>
@@ -60,7 +77,10 @@ namespace SE.Parallel
             /// </summary>
             public void Yield()
             {
-                signal.Await();
+                while(!signal)
+                    @lock.Wait();
+
+                signal.Value = false;
             }
 
             /// <summary>
@@ -68,7 +88,8 @@ namespace SE.Parallel
             /// </summary>
             public void Awake()
             {
-                signal.Set();
+                if(!signal.CompareExchange(true, false))
+                    @lock.Release();
             }
         }
         class Context
@@ -86,9 +107,6 @@ namespace SE.Parallel
                 callBack(state);
             }
         }
-
-        private readonly static Spinlock initializationLock;
-        private static UInt32 initializationCounter;
 
         private static int highPriorityCapacity = 512;
         /// <summary>
@@ -114,13 +132,13 @@ namespace SE.Parallel
         private static ConcurrentQueue<PoolWorker> suspendedWorker;
         private static ConcurrentQueue<PoolWorker> availableWorker;
 
-        private static bool shutdownState;
+        private static atomic_int state;
         /// <summary>
         /// Indicates if the pool is currently in use
         /// </summary>
-        public static bool Active
+        public static ThreadSchedulerState State
         {
-            get { return !shutdownState; }
+            get { return (ThreadSchedulerState)state.Value; }
         }
 
         private static ConcurrentQueue<Context> highPriorityJobs;
@@ -163,16 +181,10 @@ namespace SE.Parallel
         public static event ThreadExceptionEventHandler ExecutionException;
 
         static ThreadScheduler()
-        {
-            initializationLock = new Spinlock();
-            initializationCounter = 0;
-        }
+        { }
 
         private static void Initialize()
         {
-            if (workerThreads != null)
-                return;
-
             workerThreads = new PoolWorker[(Environment.ProcessorCount * 2) - 1];
             suspendedWorker = new ConcurrentQueue<PoolWorker>(workerThreads.Length.NextPowerOfTwo());
             availableWorker = new ConcurrentQueue<PoolWorker>(workerThreads.Length.NextPowerOfTwo());
@@ -185,29 +197,23 @@ namespace SE.Parallel
                 workerThreads[i] = new PoolWorker();
                 availableWorker.Enqueue(workerThreads[i]);
             }
-
-            shutdownState = false;
+            state.Exchange((int)ThreadSchedulerState.Running);
         }
         /// <summary>
         /// Initializes the ThreadPool if not already in use
         /// </summary>
-        public static void Acquire()
+        public static bool Acquire()
         {
-            using (ThreadContext.Lock(initializationLock))
+            if (state.CompareExchange((int)ThreadSchedulerState.Initializing, (int)ThreadSchedulerState.Pending) == (int)ThreadSchedulerState.Pending)
             {
-                if (++initializationCounter <= 1)
-                {
-                    Initialize();
-                    initializationCounter = 1;
-                }
+                Initialize();
+                return true;
             }
+            else return false;
         }
 
         private static void Unload()
         {
-            if (shutdownState) return;
-            shutdownState = true;
-
             if (availableWorker != null)
             {
                 PoolWorker worker;
@@ -220,22 +226,22 @@ namespace SE.Parallel
                     workerThreads[i].Awake();
                     workerThreads[i].Await();
                 }
+
             workerThreads = null;
+            state.Exchange((int)ThreadSchedulerState.Pending);
         }
         /// <summary>
         /// Closes the pool and awaits any active worker to shutdown properly if
         /// no longer in use
         /// </summary>
-        public static void Release()
+        public static bool Release()
         {
-            using (ThreadContext.Lock(initializationLock))
+            if (state.CompareExchange((int)ThreadSchedulerState.Initializing, (int)ThreadSchedulerState.Running) == (int)ThreadSchedulerState.Running)
             {
-                if (--initializationCounter <= 0)
-                {
-                    Unload();
-                    initializationCounter = 0;
-                }
+                Unload();
+                return true;
             }
+            else return false;
         }
 
         /// <summary>
@@ -247,19 +253,22 @@ namespace SE.Parallel
         /// <returns>True, if the task was successfully enqueued, false otherwise</returns>
         public static bool Start(WaitCallback callBack, object state, bool highPriority)
         {
-            if (workerThreads == null)
-                throw new ObjectDisposedException("ThreadPool");
+            Acquire();
 
-            if (shutdownState)
-                return false;
+            while (State != ThreadSchedulerState.Running)
+                Thread.Sleep(1);
 
-            if (highPriority && !highPriorityJobs.Enqueue(new Context(callBack, state))) return false;
-            else if (!highPriority && !lowPriorityJobs.Enqueue(new Context(callBack, state))) return false;
+            try
+            {
+                if (highPriority && !highPriorityJobs.Enqueue(new Context(callBack, state))) return false;
+                else if (!highPriority && !lowPriorityJobs.Enqueue(new Context(callBack, state))) return false;
 
-            PoolWorker worker;
-            if (suspendedWorker.Dequeue(out worker)) worker.Awake();
-            else if (availableWorker.Dequeue(out worker)) worker.Run();
-            return true;
+                PoolWorker worker;
+                if (suspendedWorker.Dequeue(out worker)) worker.Awake();
+                else if (availableWorker.Dequeue(out worker)) worker.Run();
+                return true;
+            }
+            catch { return false; }
         }
         /// <summary>
         /// Schedules a new task into the pool
@@ -279,35 +288,35 @@ namespace SE.Parallel
         /// <returns>True, if the task was successfully decoupled, false otherwise</returns>
         public static bool Decouple(ParameterizedThreadStart callBack)
         {
-            if (workerThreads == null)
-                throw new ObjectDisposedException("ThreadPool");
+            Acquire();
 
-            if (shutdownState)
-                return false;
+            while (State != ThreadSchedulerState.Running)
+                Thread.Sleep(1);
 
-            PoolWorker worker; if (availableWorker.Dequeue(out worker))
+            try
             {
-                worker.Replace(callBack);
-                worker.Run();
+                PoolWorker worker; if (availableWorker.Dequeue(out worker))
+                {
+                    worker.Replace(callBack);
+                    worker.Run();
 
-                return true;
+                    return true;
+                }
+                else return false;
             }
-            else return false;
+            catch { return false; }
         }
 
         /// <summary>
         /// Joins the pool to pass runtime of the calling thread to the pool
         /// </summary>
-        public static void Join()
+        public static bool Join()
         {
-            if (workerThreads == null)
-                throw new ObjectDisposedException("ThreadPool");
-
-            Context context; if (!shutdownState)
+            Context context; if (State == ThreadSchedulerState.Running)
             {
                 if (!highPriorityJobs.Dequeue(out context))
                     if (!lowPriorityJobs.Dequeue(out context))
-                        return;
+                        return false;
 
                 try
                 {
@@ -319,6 +328,7 @@ namespace SE.Parallel
                         ExecutionException.Invoke(null, new ThreadExceptionEventArgs(e));
                 }
             }
+            return true;
         }
 
         private static void Iterator(object args)
@@ -326,18 +336,19 @@ namespace SE.Parallel
             PoolWorker worker = args as PoolWorker;
 			Context context;
 
-			while(!shutdownState)
-			{
-				if(!highPriorityJobs.Dequeue(out context))
-				{
-					if (!lowPriorityJobs.Dequeue(out context))
-					{
-						suspendedWorker.Enqueue(worker);
-						worker.Yield();
+            while (!worker.Detached)
+            {
+                if (!highPriorityJobs.Dequeue(out context))
+                {
+                    if (!lowPriorityJobs.Dequeue(out context))
+                    {
+                        suspendedWorker.Enqueue(worker);
+                        if (!worker.Detached)
+                            worker.Yield();
 
-						continue;
-					}
-				}
+                        continue;
+                    }
+                }
 
                 try
                 {
@@ -348,7 +359,7 @@ namespace SE.Parallel
                     if (ExecutionException != null)
                         ExecutionException.Invoke(null, new ThreadExceptionEventArgs(e));
                 }
-			}
+            }
         }
     }
 }

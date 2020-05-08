@@ -5,16 +5,15 @@ using System;
 using System.Collections.Generic;
 using SE;
 
-namespace SE.Parallel.Processing
+namespace SE.Parallel
 {
     /// <summary>
-    /// For internal use only
+    /// Determines current state of the scheduler
     /// </summary>
-    internal interface IDispatcherInternal
+    public enum ThreadSchedulerState : byte
     {
-        /// <summary>
-        /// Called by ChannelBase constructor
-        /// </summary>
-        StreamBase Owner { set; }
+        Pending = 0,
+        Initializing = 1,
+        Running = 2
     }
 }
