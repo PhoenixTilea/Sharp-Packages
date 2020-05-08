@@ -92,7 +92,7 @@ namespace SE.App
             get { return ((flags & ApplicationFlags.DisplayManual) == ApplicationFlags.DisplayManual); }
         }
 
-        [AutoConfig("log", Text = "Sets log level output to any of [silent|minimal|full]")]
+        [AutoConfig(SeverityFlags.Minimal, "log", Text = "Sets log level output to any of [silent|minimal|full]")]
         private static SeverityFlags logSeverity = SeverityFlags.Minimal;
         /// <summary>
         /// A user defined log level
