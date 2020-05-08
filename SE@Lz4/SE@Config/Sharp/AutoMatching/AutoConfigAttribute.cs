@@ -20,7 +20,7 @@ namespace SE.Config
             converterCache = new Dictionary<Type, Func<ITypeConverter>>();
         }
 
-        protected string id;
+        string id;
         /// <summary>
         /// A string code to indicate this field or property in configuration
         /// </summary>
@@ -29,17 +29,7 @@ namespace SE.Config
             get { return id; } 
         }
 
-        protected string category;
-        /// <summary>
-        /// A string to order further information
-        /// </summary>
-        public string Category
-        {
-            get { return category; }
-            set { category = value; }
-        }
-
-        protected string text;
+        string text;
         /// <summary>
         /// A string to display when further information are required
         /// </summary>
@@ -49,7 +39,7 @@ namespace SE.Config
             set { text = value; }
         }
 
-        protected int defaultIndex;
+        int defaultIndex;
         /// <summary>
         /// Indicates the order in which properties are filled from a set of values
         /// that don't have any field or property relation attached
@@ -60,7 +50,17 @@ namespace SE.Config
             set { defaultIndex = (1 << value); }
         }
 
-        protected int flagIndex;
+        object defaultValue;
+        /// <summary>
+        /// A defined default value if the parameter was declared but doesn't match the
+        /// type of the decorated member
+        /// </summary>
+        public object DefaultValue
+        {
+            get { return defaultValue; }
+        }
+
+        int flagIndex;
         /// <summary>
         /// Indicates the index of an enumeration value set additive if this field or
         /// property is of an enumeration type
@@ -71,7 +71,7 @@ namespace SE.Config
             set { flagIndex = (1 << value); }
         }
 
-        protected int maskIndex;
+        int maskIndex;
         /// <summary>
         /// Indicates the index of an enumeration value set exclusive if this field or
         /// property is of an enumeration type
@@ -82,7 +82,7 @@ namespace SE.Config
             set { maskIndex = (1 << value); }
         }
 
-        protected Type typeConverter;
+        Type typeConverter;
         /// <summary>
         /// Sets a custom converter to apply to field or property assigned values
         /// </summary>
@@ -147,6 +147,24 @@ namespace SE.Config
         /// <summary>
         /// Declares this field or property as configurable
         /// </summary>
+        /// <param name="defaultValue">A value to be set if the parameter was defined but doesn't match the destination type</param>
+        /// <param name="long">A string code to indicate this field or property</param>
+        public AutoConfigAttribute(object defaultValue, string @long)
+        {
+            if (@long == null)
+                @long = string.Empty;
+
+            this.id = @long;
+            this.defaultIndex = 0;
+            this.flagIndex = 0;
+            this.maskIndex = 0;
+
+            this.defaultValue = defaultValue;
+            this.declaredOnly = false;
+        }
+        /// <summary>
+        /// Declares this field or property as configurable
+        /// </summary>
         /// <param name="long">A string code to indicate this field or property</param>
         public AutoConfigAttribute(string @long)
             :this(false, @long)
@@ -165,6 +183,14 @@ namespace SE.Config
         /// <param name="short">The single character code to indicate this field or property</param>
         public AutoConfigAttribute(bool declaredOnly, char @short)
             : this(declaredOnly, new string(@short, 1))
+        { }
+        /// <summary>
+        /// Declares this field or property as configurable
+        /// </summary>
+        /// <param name="defaultValue">A value to be set if the parameter was defined but doesn't match the destination type</param>
+        /// <param name="short">The single character code to indicate this field or property</param>
+        public AutoConfigAttribute(object defaultValue, char @short)
+            : this(defaultValue, new string(@short, 1))
         { }
 
         /// <summary>

@@ -101,10 +101,10 @@ namespace SE.Config
         /// Adds a collection of rows to the manual page
         /// </summary>
         /// <param name="list"></param>
-        public void AddRows(List<string[]> list)
+        public void AddRows(List<string[]> list, bool allowDuplicates = false)
         {
             foreach (string[] row in list)
-                if (!Rows.Any(p => p.SequenceEqual(row)))
+                if (allowDuplicates || !Rows.Any(p => p.SequenceEqual(row)))
                     AddRow(row);
         }
 

@@ -268,11 +268,22 @@ namespace SE.Config
             else
                 list = ((member as FieldInfo).GetValue(target) as System.Collections.IList);
 
+            bool defaultSet = false;
             for (int i = 0; i < values.Count; i++)
             {
+                if (!defaultSet && attrib.DefaultValue != null && memberType == typeof(string) && values[i] == "true")
+                {
+                    values[i] = attrib.DefaultValue.ToString();
+                    defaultSet = true;
+                }
                 foreach (string value in values[i].Split(';'))
                 {
                     object obj = Parse(attrib, memberType, value.Trim());
+                    if (!defaultSet && attrib.DefaultValue != null && memberType != typeof(string) && obj == null)
+                    {
+                        obj = attrib.DefaultValue.ToString();
+                        defaultSet = true;
+                    }
                     if (obj != null)
                         list.Add(obj);
                 }
@@ -292,6 +303,7 @@ namespace SE.Config
             if (!memberType.IsEnum)
                 return false;
 
+            bool defaultSet = false;
             for (int i = 0; i < values.Count; i++)
                 try
                 {
@@ -300,13 +312,18 @@ namespace SE.Config
                     if (attrib.IsFlag && values[i] == "true") v = attrib.FlagIndex;
                     else
                     {
-                        if (attrib.IsMaskedValue && values[i] == "true")
+                        if (!defaultSet && attrib.DefaultValue != null && (values[i] == null || values[i].Equals("true")))
+                        {
+                            v = attrib.DefaultValue;
+                            defaultSet = true;
+                        }
+                        else if (attrib.IsMaskedValue && values[i] == "true")
+                        {
                             v = Enum.ToObject(memberType, attrib.MaskIndex);
-                        else
-                            v = Parse(attrib, memberType, values[i]);
+                        }
+                        else v = Parse(attrib, memberType, values[i]);
                         explicite = true;
                     }
-
                     if (v == null)
                         continue;
                     else if (member.MemberType == MemberTypes.Property)
@@ -331,12 +348,18 @@ namespace SE.Config
         }
         private static bool TrySetValue(object target, AutoConfigAttribute attrib, MemberInfo member, Type memberType, List<string> values)
         {
+            bool defaultSet = false;
             for (int i = 0; i < values.Count; i++)
             try
             {
                 object parsed; if (attrib.DeclaredOnly && memberType == typeof(bool)) parsed = true;
                 else parsed = Parse(attrib, memberType, values[i]);
 
+                if (!defaultSet && attrib.DefaultValue != null && (parsed == null || parsed.Equals("true")))
+                {
+                    parsed = attrib.DefaultValue;
+                    defaultSet = true;
+                }
                 if (member.MemberType == MemberTypes.Property)
                 {
                     PropertyInfo nfo = (PropertyInfo)member;
