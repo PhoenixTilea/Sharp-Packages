@@ -8,8 +8,8 @@ using SE;
 
 namespace SE.Text.Parsing
 {
-    public abstract partial class StreamTokenizer<TokenId, StateId> where TokenId : struct, IConvertible, IComparable, IFormattable
-                                                                    where StateId : struct, IConvertible, IComparable, IFormattable
+    public partial class StreamTokenizer<TokenId, StateId> where TokenId : struct, IConvertible, IComparable
+                                                           where StateId : struct, IConvertible, IComparable
     {
         /// <summary>
         /// Moves the stream pointer to next available position if possible
@@ -37,14 +37,15 @@ namespace SE.Text.Parsing
         /// <summary>
         /// Returns the next available UTF8 character but does not consume it
         /// </summary>
-        protected Char32 PeekCharacter()
+        protected virtual Char32 PeekCharacter()
         {
             if (secondaryStream.Eof())
             {
                 Char32 result = ReadCharacter();
                 if (result > 0)
+                {
                     secondaryStream.Buffer.Add(result);
-
+                }
                 return result;
             }
             else return secondaryStream.Current;
@@ -52,10 +53,21 @@ namespace SE.Text.Parsing
         /// <summary>
         /// Reads the next UTF8 character from the input stream and advances it's position by one
         /// </summary>
-        protected Char32 GetCharacter()
+        protected virtual Char32 GetCharacter()
         {
             Char32 result = PeekCharacter();
             secondaryStream.Position++;
+
+            return result;
+        }
+        /// <summary>
+        /// Reads the next UTF8 character from the input stream and advances it's position without
+        /// preserving the character in the underlying buffer.
+        /// </summary>
+        protected Char32 DiscardCharacter()
+        {
+            Char32 result = PeekCharacter();
+            RawDataBuffer.Discard(1);
 
             return result;
         }

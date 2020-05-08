@@ -7,8 +7,8 @@ using SE;
 
 namespace SE.Text.Parsing
 {
-    public partial class StreamTokenizer<TokenId, StateId> where TokenId : struct, IConvertible, IComparable, IFormattable
-                                                           where StateId : struct, IConvertible, IComparable, IFormattable
+    public partial class StreamTokenizer<TokenId, StateId> where TokenId : struct, IConvertible, IComparable
+                                                           where StateId : struct, IConvertible, IComparable
     {
         /// <summary>
         /// A collection of basic token rules

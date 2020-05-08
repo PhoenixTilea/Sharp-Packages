@@ -7,8 +7,8 @@ using SE;
 
 namespace SE.Text.Parsing
 {
-    public partial class StreamTokenizer<TokenId, StateId> where TokenId : struct, IConvertible, IComparable, IFormattable
-                                                           where StateId : struct, IConvertible, IComparable, IFormattable
+    public partial class StreamTokenizer<TokenId, StateId> where TokenId : struct, IConvertible, IComparable
+                                                           where StateId : struct, IConvertible, IComparable
     {
         /// <summary>
         /// Clears the internal buffer
@@ -28,6 +28,14 @@ namespace SE.Text.Parsing
             DiscardBufferedData();
 
             return result;
+        }
+
+        /// <summary>
+        /// Returns the internal buffer as preview string
+        /// </summary>
+        public string PreviewBufferedData()
+        {
+            return GetBuffer(false);
         }
 
         /// <summary>

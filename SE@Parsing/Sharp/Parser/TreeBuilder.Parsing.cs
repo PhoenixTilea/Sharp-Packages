@@ -9,9 +9,9 @@ using SE;
 
 namespace SE.Text.Parsing
 {
-    public abstract partial class TreeBuilder<TokenId, TokenizerStateId, ParserStateId> where TokenId : struct, IConvertible, IComparable, IFormattable
-                                                                                        where TokenizerStateId : struct, IConvertible, IComparable, IFormattable
-                                                                                        where ParserStateId : struct, IConvertible, IComparable, IFormattable
+    public abstract partial class TreeBuilder<TokenId, TokenizerStateId, ParserStateId> where TokenId : struct, IConvertible, IComparable
+                                                                                        where TokenizerStateId : struct, IConvertible, IComparable
+                                                                                        where ParserStateId : struct, IConvertible, IComparable
     {
         /// <summary>
         /// Creates the tree of tokens from the provided text stream
@@ -30,11 +30,12 @@ namespace SE.Text.Parsing
                 throw new FormatException();
 
             currentContext = context;
+            List<Tuple<TokenId, string, TextPointer>> defaultQueue = preservationQueue;
             using (tokenizer = Begin(stream, encoding == Encoding.UTF8))
                 try
                 {
                     tokenizer.Discard = discardStream;
-                    preservationQueue = new List<Tuple<TokenId, string, TextPointer>>();
+                    preservationQueue = CollectionPool<List<Tuple<TokenId, string, TextPointer>>, Tuple<TokenId, string, TextPointer>>.Get();
                     while (!EndOfStream)
                     {
                         TokenId token;
@@ -61,7 +62,9 @@ namespace SE.Text.Parsing
                 }
                 finally
                 {
-                    preservationQueue = null;
+                    CollectionPool<List<Tuple<TokenId, string, TextPointer>>, Tuple<TokenId, string, TextPointer>>.Return(preservationQueue);
+
+                    preservationQueue = defaultQueue;
                     currentContext = null;
                     tokenizer = null;
                 }

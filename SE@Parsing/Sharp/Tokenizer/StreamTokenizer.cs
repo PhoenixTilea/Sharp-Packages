@@ -12,8 +12,8 @@ namespace SE.Text.Parsing
     /// <summary>
     /// A stream reader specialized to process text into tokens of certain grammar
     /// </summary>
-    public partial class StreamTokenizer<TokenId, StateId> : IDisposable where TokenId : struct, IConvertible, IComparable, IFormattable
-                                                                         where StateId : struct, IConvertible, IComparable, IFormattable
+    public abstract partial class StreamTokenizer<TokenId, StateId> : IDisposable where TokenId : struct, IConvertible, IComparable
+                                                                                  where StateId : struct, IConvertible, IComparable
     {
         public delegate bool SkipDelimiter(Char32 character);
 
@@ -82,7 +82,7 @@ namespace SE.Text.Parsing
             get { return state; }
         }
 
-        StringBuilder textBuffer;
+        protected StringBuilder textBuffer;
         /// <summary>
         /// Returns current buffer content for further use
         /// </summary>
@@ -102,6 +102,7 @@ namespace SE.Text.Parsing
         public TextPointer Carret
         {
             get { return textPointer; }
+            set { textPointer = value; }
         }
 
         /// <summary>

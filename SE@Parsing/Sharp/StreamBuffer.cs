@@ -12,7 +12,7 @@ namespace SE.Text.Parsing
     /// <summary>
     /// Wraps a buffer of primitive types into a streaming interface
     /// </summary>
-    public class StreamBuffer<T> : Stream, IDisposable where T : struct, IComparable, IFormattable, IConvertible, IComparable<T>, IEquatable<T>
+    public class StreamBuffer<T> : Stream, IDisposable where T : struct, IComparable, IConvertible, IComparable<T>, IEquatable<T>
     {
         private readonly static Func<object, object> internalBuffer;
         private readonly static int byteSize;
@@ -66,6 +66,18 @@ namespace SE.Text.Parsing
                 else return buffer[(int)position];
             }
             set { buffer[(int)position] = value; }
+        }
+
+        /// <summary>
+        /// The head element of the buffer
+        /// </summary>
+        public T Head
+        {
+            get
+            {
+                if (buffer.Count == 0) return default(T);
+                else return buffer[buffer.Count - 1];
+            }
         }
 
         static StreamBuffer()
@@ -168,6 +180,39 @@ namespace SE.Text.Parsing
                 count
             );
             Position += elementCount;
+        }
+
+        /// <summary>
+        /// Replaces the last item added to the buffer
+        /// </summary>
+        /// <param name="value">The value to replace the item with</param>
+        /// <returns>The value that has been replaced</returns>
+        public T Replace(T value)
+        {
+            if (buffer.Count > 0)
+            {
+                T result = buffer[buffer.Count - 1];
+                buffer[buffer.Count - 1] = value;
+
+                return result;
+            }
+            else
+            {
+                buffer.Add(value);
+                position++;
+
+                return default(T);
+            }
+        }
+
+        /// <summary>
+        /// Discards items from the end of this buffer
+        /// </summary>
+        /// <param name="count">An amount of items to discard</param>
+        public void Discard(int count)
+        {
+            buffer.RemoveRange(buffer.Count - count, count);
+            position = buffer.Count;
         }
 
         IEnumerable<T> FillBuffer(int length)

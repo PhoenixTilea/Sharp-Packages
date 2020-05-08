@@ -12,6 +12,8 @@ namespace SE.Text.Parsing
     /// </summary>
     public enum ProductionState : byte
     {
+        Next = 0,
+
         Preserve = 0x1,
         Shift = 0x2,
         Reduce = 0x4,

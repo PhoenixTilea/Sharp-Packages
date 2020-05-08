@@ -11,7 +11,7 @@ namespace SE.Text.Parsing
     /// <summary>
     /// Provides stackable sate transitions for token processing
     /// </summary>
-    public class ProcessingState<StateId> : IEnumerable<StateId> where StateId : struct, IConvertible, IComparable, IFormattable
+    public class ProcessingState<StateId> : IEnumerable<StateId> where StateId : struct, IConvertible, IComparable
     {
         Stack<StateId> stack;
         public int Count
