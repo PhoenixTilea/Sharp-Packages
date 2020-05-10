@@ -20,16 +20,6 @@ namespace SE.Text.Cpp
             set { allowUcnConversion = value; }
         }
 
-        bool isAtLineStart;
-        /// <summary>
-        /// Determines if the tokenizer is at the start of a line
-        /// </summary>
-        public bool IsAtLineStart
-        {
-            get { return isAtLineStart; }
-            protected internal set { newLineCharacter = value; }
-        }
-
         bool newLineCharacter;
 
         /// <summary>
@@ -183,7 +173,6 @@ namespace SE.Text.Cpp
                 case '\"':
                 case '\'':
                     {
-                        isAtLineStart = newLineCharacter;
                         newLineCharacter = false;
                     }
                     break;
@@ -193,7 +182,6 @@ namespace SE.Text.Cpp
                 case '\n':
                     {
                         newLineCharacter = true;
-                        isAtLineStart = true;
                     }
                     break;
                 #endregion
@@ -228,7 +216,6 @@ namespace SE.Text.Cpp
                             }
                         }
                         newLineCharacter = false;
-                        isAtLineStart = false;
                     }
                     break;
                 #endregion

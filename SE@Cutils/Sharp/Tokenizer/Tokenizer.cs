@@ -24,7 +24,6 @@ namespace SE.Text.Cpp
         {
             this.allowUcnConversion = true;
             this.newLineCharacter = (stream.Position == 0);
-            this.isAtLineStart = true;
         }
 
         /// <summary>
@@ -33,12 +32,35 @@ namespace SE.Text.Cpp
         /// </summary>
         protected override Token GetToken(object context)
         {
+            Token result = ProcessGetToken();
+            switch (result)
+            {
+                case Token.NewLine:
+                    {
+                        State.Set(CppTokenizerState.Initial);
+                    }
+                    break;
+                case Token.Comment:
+                case Token.Whitespace:
+                    break;
+                default:
+                    {
+                        State.Set(CppTokenizerState.AfterWhitespace);
+                    }
+                    break;
+            }
+            return result;
+        }
+
+        Token ProcessGetToken()
+        {
             allowUcnConversion = true;
             switch (PeekCharacter())
             {
-                case '#': if(isAtLineStart)
+                case '#': if(State.Current == CppTokenizerState.Initial)
                     {
                         RawDataBuffer.Position++;
+                        BaseRules.NullLiteral(this);
                         switch (PeekCharacter())
                         {
                             case 'i':

@@ -19,6 +19,11 @@ namespace SE.Text.Cpp
         Initial = 0,
 
         /// <summary>
+        /// The first token of a line
+        /// </summary>
+        AfterWhitespace,
+
+        /// <summary>
         /// C++ #include header-name
         /// https://www.nongnu.org/hcb/#header-name
         /// </summary>

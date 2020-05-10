@@ -143,7 +143,7 @@ namespace SE.Text.Cpp
 
             MemoryStream ms = new MemoryStream(encoding.GetBytes(String.Concat(l.Buffer, r.Buffer)));
             Tokenizer t = new Tokenizer(ms, tokenizer.IsUtf8);
-            t.IsAtLineStart = false;
+            t.State.Set(CppTokenizerState.AfterWhitespace);
 
             List<CompilerToken> tokens = CollectionPool<List<CompilerToken>, CompilerToken>.Get();
             TextPointer carret = l.Carret;
