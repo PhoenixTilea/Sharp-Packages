@@ -89,16 +89,8 @@ namespace SE.Text.Cpp
         {
             if (!defines.ContainsKey(name.Fnv32()))
             {
-                #region Encoding
-                Encoding encoding; if (tokenizer.IsUtf8)
-                {
-                    encoding = Encoding.UTF8;
-                }
-                else encoding = Encoding.ASCII;
-                #endregion
-
-                MemoryStream ms = new MemoryStream(encoding.GetBytes(replacementList));
-                Tokenizer t = new Tokenizer(ms, tokenizer.IsUtf8);
+                MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(replacementList));
+                Tokenizer t = new Tokenizer(ms, false);
                 t.State.Set(CppTokenizerState.AfterWhitespace);
 
                 List<CompilerToken> tokens = CollectionPool<List<CompilerToken>, CompilerToken>.Get();
@@ -118,7 +110,7 @@ namespace SE.Text.Cpp
                         carret = t.Carret;
                         token = t.Read();
                     }
-                    return Define(name, tokens.ToString());
+                    return Define(name, tokens.ToArray());
                 }
                 finally
                 {
@@ -163,16 +155,8 @@ namespace SE.Text.Cpp
         {
             if (!defines.ContainsKey(name.Fnv32()))
             {
-                #region Encoding
-                Encoding encoding; if (tokenizer.IsUtf8)
-                {
-                    encoding = Encoding.UTF8;
-                }
-                else encoding = Encoding.ASCII;
-                #endregion
-
-                MemoryStream ms = new MemoryStream(encoding.GetBytes(replacementList));
-                Tokenizer t = new Tokenizer(ms, tokenizer.IsUtf8);
+                MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(replacementList));
+                Tokenizer t = new Tokenizer(ms, false);
                 t.State.Set(CppTokenizerState.AfterWhitespace);
 
                 List<CompilerToken> tokens = CollectionPool<List<CompilerToken>, CompilerToken>.Get();
@@ -192,7 +176,7 @@ namespace SE.Text.Cpp
                         carret = t.Carret;
                         token = t.Read();
                     }
-                    return Define(name, parameter, tokens.ToString());
+                    return Define(name, parameter, tokens.ToArray());
                 }
                 finally
                 {
