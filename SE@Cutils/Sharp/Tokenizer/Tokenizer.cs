@@ -45,7 +45,8 @@ namespace SE.Text.Cpp
                     break;
                 default:
                     {
-                        State.Set(CppTokenizerState.AfterWhitespace);
+                        if (State.Current == CppTokenizerState.Initial)
+                            State.Set(CppTokenizerState.AfterWhitespace);
                     }
                     break;
             }
@@ -277,30 +278,37 @@ namespace SE.Text.Cpp
         /// </summary>
         Token ReadUnquotedHeaderName()
         {
-            DiscardCharacter();
-            do
+            try
             {
-                switch (GetCharacter())
+                DiscardCharacter();
+                do
                 {
-                    #region UnqoutedHeaderName
-                    case '>':
-                        {
-                            RawDataBuffer.Discard(1);
-                            return Token.UnqoutedHeaderName;
-                        }
-                    #endregion
+                    switch (GetCharacter())
+                    {
+                        #region UnqoutedHeaderName
+                        case '>':
+                            {
+                                RawDataBuffer.Discard(1);
+                                return Token.UnqoutedHeaderName;
+                            }
+                        #endregion
 
-                    #region BogusUnqoutedHeaderName
-                    case '\n':
-                        {
-                            RawDataBuffer.Position--;
-                            return Token.BogusUnqoutedHeaderName;
-                        }
-                    #endregion
+                        #region BogusUnqoutedHeaderName
+                        case '\n':
+                            {
+                                RawDataBuffer.Position--;
+                                return Token.BogusUnqoutedHeaderName;
+                            }
+                            #endregion
+                    }
                 }
+                while (!EndOfStream);
+                return Token.BogusUnqoutedHeaderName;
             }
-            while (!EndOfStream);
-            return Token.BogusUnqoutedHeaderName;
+            finally
+            {
+                State.Reset();
+            }
         }
     }
 }

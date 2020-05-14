@@ -720,6 +720,7 @@ namespace SE.Text.Cpp
                         }
                         if (sb.Length > 0)
                         {
+                            PushToken(Tuple.Create(token, Current, Carret));
                             PushToken(Tuple.Create(Token.UnqoutedHeaderName, sb.ToString(), carret));
                             return ProductionState.Next;
                         }
