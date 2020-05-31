@@ -1,1 +1,22 @@
-{"name":"@schroedingerentertainment/se.sharp.common","description":"Core module for C# based packages","homepage":"https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Common/Sharp","license":"AGPL-3.0-or-later","author":{"name":"Shaarigan","url":"https://github.com/Shaarigan"},"version":"1.1.0","keywords":["c#","csharp","sharp","module"],"repository":{"url":"https://github.com/SchroedingerEntertainment/Sharp-Packages.git","type":"git","directory":"SE@Common/Sharp"}}
+﻿{
+    "name" : "@schroedingerentertainment/se.sharp.common",
+    "description" : "Core module for C# based packages",
+    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Common/Sharp",
+    "license" : "AGPL-3.0-or-later",
+    "author" : {
+        "name" : "Shaarigan",
+        "url" : "https://github.com/Shaarigan"
+    },
+    "version" : "1.2.0",
+    "keywords" : [
+        "c#",
+        "csharp",
+        "sharp",
+        "module"
+    ],
+    "repository" : {
+        "url" : "https://github.com/SchroedingerEntertainment/Sharp-Packages.git",
+        "type" : "git",
+        "directory" : "SE@Common/Sharp"
+    }
+}
