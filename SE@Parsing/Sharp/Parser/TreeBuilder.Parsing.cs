@@ -19,13 +19,16 @@ namespace SE.Text.Parsing
         /// <param name="stream">An ASCII or UTF8 text stream to process</param>
         /// <param name="discardStream">determines if the stream should be closed after processing ends</param>
         /// <returns>True if successfully processed the stream, false otherwise</returns>
-        public bool Parse(Stream stream, bool discardStream, object context = null)
+        public bool Parse(Stream stream, Encoding encoding, bool discardStream, object context = null)
         {
             bool result = true;
             if(BuilderState.Count == 0)
                 BuilderState.Set(default(ParserStateId));
 
-            Encoding encoding = stream.GetEncoding();
+            if (encoding == null)
+            {
+                encoding = stream.GetEncoding();
+            }
             if (encoding != Encoding.ASCII && encoding != Encoding.UTF8)
                 throw new FormatException();
 
@@ -75,9 +78,27 @@ namespace SE.Text.Parsing
         /// </summary>
         /// <param name="stream">An ASCII or UTF8 text stream to process</param>
         /// <returns>True if successfully processed the stream, false otherwise</returns>
+        public bool Parse(Stream stream, bool discardStream, object context = null)
+        {
+            return Parse(stream, null, discardStream, context);
+        }
+        /// <summary>
+        /// Creates the tree of tokens from the provided text stream
+        /// </summary>
+        /// <param name="stream">An ASCII or UTF8 text stream to process</param>
+        /// <returns>True if successfully processed the stream, false otherwise</returns>
+        public bool Parse(Stream stream, Encoding encoding, object context = null)
+        {
+            return Parse(stream, encoding, true, context);
+        }
+        /// <summary>
+        /// Creates the tree of tokens from the provided text stream
+        /// </summary>
+        /// <param name="stream">An ASCII or UTF8 text stream to process</param>
+        /// <returns>True if successfully processed the stream, false otherwise</returns>
         public bool Parse(Stream stream, object context = null)
         {
-            return Parse(stream, true, context);
+            return Parse(stream, null, true, context);
         }
 
         /// <summary>
