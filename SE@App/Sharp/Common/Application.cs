@@ -69,7 +69,6 @@ namespace SE.App
             get { return workerPath; }
         }
 
-        private static string topLevelPath;
         private static string manifestFile;
 
         [AutoConfig("?", Text = "Displays this manual pages", FlagIndex = 1)]
@@ -247,24 +246,24 @@ namespace SE.App
             if (string.IsNullOrWhiteSpace(basePath))
                 basePath = workerPath;
 
-            if (topLevelPath == null)
+            string tmp = null;
+            if (!string.IsNullOrWhiteSpace(tmp = LinearFindDirectory(basePath, CacheDirectoryName)))
             {
-                string tmp = null;
-                if (!string.IsNullOrWhiteSpace(tmp = LinearFindDirectory(basePath, CacheDirectoryName)))
-                    topLevelPath = Path.GetDirectoryName(tmp);
-                else if (!string.IsNullOrWhiteSpace(tmp = LinearFindDirectory(basePath, ConfigDirectoryName)))
-                    topLevelPath = Path.GetDirectoryName(tmp);
-                else
-                {
-                    if (!string.IsNullOrWhiteSpace(tmp = LinearFindDirectory(rootPath, CacheDirectoryName)))
-                        topLevelPath = Path.GetDirectoryName(tmp);
-                    else if (!string.IsNullOrWhiteSpace(tmp = LinearFindDirectory(rootPath, ConfigDirectoryName)))
-                        topLevelPath = Path.GetDirectoryName(tmp);
-                    else
-                        topLevelPath = rootPath;
-                }
+                return Path.GetDirectoryName(tmp);
             }
-            return topLevelPath;
+            else if (!string.IsNullOrWhiteSpace(tmp = LinearFindDirectory(basePath, ConfigDirectoryName)))
+            {
+                return Path.GetDirectoryName(tmp);
+            }
+            else if (!string.IsNullOrWhiteSpace(tmp = LinearFindDirectory(rootPath, CacheDirectoryName)))
+            {
+                return Path.GetDirectoryName(tmp);
+            }
+            else if (!string.IsNullOrWhiteSpace(tmp = LinearFindDirectory(rootPath, ConfigDirectoryName)))
+            {
+                return Path.GetDirectoryName(tmp);
+            }
+            else return rootPath;
         }
 
         /// <summary>
