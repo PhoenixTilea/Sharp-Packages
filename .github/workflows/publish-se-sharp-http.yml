@@ -21,6 +21,8 @@ jobs:
           scope: 'SchroedingerEntertainment'
       - run: npm install
         working-directory: ${{env.sub-dir}}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - run: npm ci
         working-directory: ${{env.sub-dir}}
       - run: npm publish
