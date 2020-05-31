@@ -147,7 +147,11 @@ namespace SE.Text.Cpp
                             return;
                     }
                 }
-                else errors.AddFormatted(ErrorMessages.UnexpectedEndConditional, file, Carret);
+                else
+                {
+                    errors.AddFormatted(ErrorMessages.UnexpectedEndConditional, file, Carret);
+                    break;
+                }
             }
         }
     }

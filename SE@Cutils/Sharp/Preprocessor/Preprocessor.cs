@@ -1086,12 +1086,16 @@ namespace SE.Text.Cpp
                             {
                                 if (!ExpandMacro(Current))
                                     goto default;
+
+                                discardNewLineToken = false;
                             }
                             return ProductionState.Next;
                         case Token.Numeric:
                             {
                                 if (!decimal.TryParse(Current, NumberStyles.Integer | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out line) || line < 0)
                                     goto default;
+
+                                discardNewLineToken = false;
                             }
                             return ProductionState.Shift;
                         default:
@@ -1103,27 +1107,30 @@ namespace SE.Text.Cpp
                 #endregion
 
                 #region (Literal | >>Identifier)?
-                case 1: switch (token)
+                case 1:
                     {
-                        case Token.Identifier:
-                            {
-                                if (!ExpandMacro(Current))
+                        switch (token)
+                        {
+                            case Token.Identifier:
                                 {
-                                    errors.AddFormatted(ErrorMessages.InvalidFileName, file, Carret, "#line");
+                                    if (!ExpandMacro(Current))
+                                    {
+                                        errors.AddFormatted(ErrorMessages.InvalidFileName, file, Carret, "#line");
+                                    }
                                 }
-                            }
-                            return ProductionState.Next;
-                        case Token.StringLiteral:
-                            {
-                                file = Current;
-                                tokenizer.Carret = new TextPointer(decimal.ToUInt32(line), Carret.Column);
-                            }
-                            break;
-                        case Token.BogusStringLiteral:
-                            {
-                                errors.AddFormatted(ErrorMessages.UnterminatedFileName, file, Carret, "#line");
-                            }
-                            return ProductionState.Failure;
+                                return ProductionState.Next;
+                            case Token.StringLiteral:
+                                {
+                                    file = Current;
+                                }
+                                break;
+                            case Token.BogusStringLiteral:
+                                {
+                                    errors.AddFormatted(ErrorMessages.UnterminatedFileName, file, Carret, "#line");
+                                }
+                                return ProductionState.Failure;
+                        }
+                        tokenizer.Carret = new TextPointer(decimal.ToUInt32(line), Carret.Column);
                     }
                     break;
                 #endregion
@@ -1132,6 +1139,7 @@ namespace SE.Text.Cpp
             {
                 token = MoveNext();
             }
+            discardNewLineToken = true;
             return ProductionState.Success;
         }
         bool Line(Token token)
