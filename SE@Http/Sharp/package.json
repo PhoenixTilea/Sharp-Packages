@@ -1,0 +1,26 @@
+﻿{
+    "name" : "@schroedingerentertainment/se.sharp.http",
+    "description" : "An extended HTTP REST API like client",
+    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Http/Sharp",
+    "license" : "AGPL-3.0-or-later",
+    "author" : {
+        "name" : "Shaarigan",
+        "url" : "https://github.com/Shaarigan"
+    },
+    "version" : "1.0.0",
+    "dependencies" : {
+        "@schroedingerentertainment/se.sharp.common" : "^1.1.0",
+        "@schroedingerentertainment/se.sharp.storage" : "^1.1.0"
+    },
+    "keywords" : [
+        "c#",
+        "csharp",
+        "sharp",
+        "module"
+    ],
+    "repository" : {
+        "url" : "https://github.com/SchroedingerEntertainment/Sharp-Packages.git",
+        "type" : "git",
+        "directory" : "SE@Http/Sharp"
+    }
+}
