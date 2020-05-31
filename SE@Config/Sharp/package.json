@@ -1,1 +1,26 @@
-{"name":"@schroedingerentertainment/se.sharp.config","description":"Command line utility module","homepage":"https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Config/Sharp","license":"AGPL-3.0-or-later","author":{"name":"Shaarigan","url":"https://github.com/Shaarigan"},"version":"1.1.0","dependencies":{"@schroedingerentertainment/se.sharp.json":"^1.1.0","@schroedingerentertainment/se.sharp.common":"^1.1.0"},"keywords":["c#","csharp","sharp","module"],"repository":{"url":"https://github.com/SchroedingerEntertainment/Sharp-Packages.git","type":"git","directory":"SE@Config/Sharp"}}
+﻿{
+    "name" : "@schroedingerentertainment/se.sharp.config",
+    "description" : "Command line utility module",
+    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Config/Sharp",
+    "license" : "AGPL-3.0-or-later",
+    "author" : {
+        "name" : "Shaarigan",
+        "url" : "https://github.com/Shaarigan"
+    },
+    "version" : "1.2.0",
+    "dependencies" : {
+        "@schroedingerentertainment/se.sharp.common" : "^1.2.0",
+        "@schroedingerentertainment/se.sharp.json" : "^1.1.0"
+    },
+    "keywords" : [
+        "c#",
+        "csharp",
+        "sharp",
+        "module"
+    ],
+    "repository" : {
+        "url" : "https://github.com/SchroedingerEntertainment/Sharp-Packages.git",
+        "type" : "git",
+        "directory" : "SE@Config/Sharp"
+    }
+}
