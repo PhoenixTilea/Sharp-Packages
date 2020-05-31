@@ -9,7 +9,7 @@ namespace SE.Npm
     /// <summary>
     /// Provides personal information inside of a package info instance
     /// </summary>
-    public class PersonInfo
+    public class IdentityInfo
     {
         string name;
         /// <summary>
@@ -41,7 +41,7 @@ namespace SE.Npm
         /// <summary>
         /// Creates a new person info instance
         /// </summary>
-        public PersonInfo(string name, string email, Uri home)
+        public IdentityInfo(string name, string email, Uri home)
         {
             this.name = name;
             this.email = email;

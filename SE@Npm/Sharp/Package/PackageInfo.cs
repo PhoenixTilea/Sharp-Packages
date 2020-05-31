@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using SE.Json;
 
 namespace SE.Npm
@@ -19,8 +20,11 @@ namespace SE.Npm
         const string PackageArchitectureValidity = "cpu";
         const string PackageConfiguration = "config";
 
-        const string ParameterStandalonePackage = "master";
-        const string ParameterSubmodulePackage = "submodule";
+        public static class ParameterNames
+        {
+            public const string StandalonePackage = "master";
+            public const string SubmodulePackage = "submodule";
+        }
 
         const string PackageVersionNumber = "version";
         const string PackageTags = "keywords";
@@ -44,8 +48,14 @@ namespace SE.Npm
         const string RepositoryDirectory = "directory";
 
         const string PackageHome = "homepage";
-
         const string IncludedFiles = "files";
+
+        const string PackageDistribution = "dist";
+
+        const string DistributionChecksum = "shasum";
+        const string DistributionHome = "tarball";
+
+        const string PackageCommandArguments = "scripts";
 
         PackageId id;
         /// <summary>
@@ -69,14 +79,14 @@ namespace SE.Npm
         /// </summary>
         public string Namespace
         {
-            get { return id.Namespace.ToTitleCase(); }
+            get { return Decode(id.Namespace); }
         }
         /// <summary>
         /// The package names
         /// </summary>
         public string Name
         {
-            get { return id.Name.ToTitleCase(); }
+            get { return Decode(id.Name); }
         }
 
         string description;
@@ -143,7 +153,7 @@ namespace SE.Npm
         {
             get
             {
-                return (parameter.ContainsKey(ParameterStandalonePackage));
+                return (parameter.ContainsKey(ParameterNames.StandalonePackage));
             }
         }
         /// <summary>
@@ -153,15 +163,15 @@ namespace SE.Npm
         {
             get
             {
-                return parameter.ContainsKey(ParameterSubmodulePackage);
+                return parameter.ContainsKey(ParameterNames.SubmodulePackage);
             }
         }
 
-        List<PersonInfo> authors;
+        List<IdentityInfo> authors;
         /// <summary>
         /// A collection of this packages authors
         /// </summary>
-        public List<PersonInfo> Authors
+        public List<IdentityInfo> Authors
         {
             get { return authors; }
         }
@@ -204,11 +214,11 @@ namespace SE.Npm
             set { bugTracker = value; }
         }
 
-        PackageRepository repository;
+        RepositoryInfo repository;
         /// <summary>
         /// This package's content repository
         /// </summary>
-        public PackageRepository Repository
+        public RepositoryInfo Repository
         {
             get { return repository; }
             set { repository = value; }
@@ -223,6 +233,34 @@ namespace SE.Npm
             get { return files; }
         }
 
+        DateTime releaseDate;
+        /// <summary>
+        /// The release date of this package set by the repository
+        /// </summary>
+        public DateTime ReleaseDate
+        {
+            get { return releaseDate; }
+            set { releaseDate = value; }
+        }
+
+        DistributionInfo distributionInfo;
+        /// <summary>
+        /// Provides distribution info for the package content
+        /// </summary>
+        public DistributionInfo Distribution
+        {
+            get { return distributionInfo; }
+        }
+
+        Dictionary<string, string> arguments;
+        /// <summary>
+        /// A list of arguments that can be referenced to
+        /// </summary>
+        public Dictionary<string, string> Arguments
+        {
+            get { return arguments; }
+        }
+
         /// <summary>
         /// Creates a new package meta instance
         /// </summary>
@@ -233,164 +271,199 @@ namespace SE.Npm
             this.tags = new HashSet<string>();
 
             this.parameter = new Dictionary<string, object>();
-            this.authors = new List<PersonInfo>();
+            this.authors = new List<IdentityInfo>();
 
             this.references = new HashSet<PackageReference>();
 
             this.files = new HashSet<string>();
+
+            this.arguments = new Dictionary<string, string>();
         }
 
-        public override bool Load(Stream stream)
+        public override bool Load(Stream stream, Encoding encoding)
         {
-            if (base.Load(stream)) return Process();
+            if (base.Load(stream, encoding))
+            {
+                if (Root == null)
+                    return false;
+
+                return Process(Root.Child);
+            }
             else return false;
         }
-        bool Process()
-        {
-            if (Root == null)
-                return false;
 
-            JsonNode property = Root.Child;
-            while (property != null)
+        /// <summary>
+        /// Tries to parse a registry entry from provided json
+        /// </summary>
+        /// <returns>True if successfully parsed, false otherwise</returns>
+        internal bool Process(JsonNode rootNode)
+        {
+            if (parser == null) parser = new JsonParser(this);
+            while (rootNode != null)
             {
-                switch (property.Name.ToLowerInvariant())
+                switch (rootNode.Name.ToLowerInvariant())
                 {
                     #region PackageName = 'name';
-                    case PackageName: if(property.Type == JsonNodeType.String)
+                    case PackageName: if(rootNode.Type == JsonNodeType.String)
                         {
-                            object pid; if (PackageId.TryParse(property.ToString(), out pid))
+                            object pid; if (PackageId.TryParse(rootNode.ToString(), out pid))
                             {
                                 id = pid as PackageId;
                                 break;
                             }
-                            else parser.Errors.Add(string.Format(ResponseCodes.PackageInfo.InvalidPackageName, property.ToString()));
+                            else parser.Errors.Add(string.Format(ResponseCodes.PackageInfo.InvalidPackageName, rootNode.ToString()));
                         }
                         return false;
                     #endregion
 
                     #region PackageDescription = 'description';
-                    case PackageDescription: if (property.Type == JsonNodeType.String)
+                    case PackageDescription: if (rootNode.Type == JsonNodeType.String)
                         {
-                            description = property.ToString();
+                            description = rootNode.ToString();
                         }
                         break;
                     #endregion
 
                     #region PackagePlatformValidity = 'os';
-                    case PackagePlatformValidity: if (property.Type == JsonNodeType.Array)
+                    case PackagePlatformValidity: if (rootNode.Type == JsonNodeType.Array)
                         {
-                            ReadPropertyTags(property, platforms);
+                            ReadPropertyTags(rootNode, platforms);
                         }
                         break;
                     #endregion
 
                     #region PackageArchitectureValidity = 'cpu';
-                    case PackageArchitectureValidity: if (property.Type == JsonNodeType.Array)
+                    case PackageArchitectureValidity: if (rootNode.Type == JsonNodeType.Array)
                         {
-                            ReadPropertyTags(property, architectures);
+                            ReadPropertyTags(rootNode, architectures);
                         }
                         break;
                     #endregion
 
                     #region PackageConfiguration = 'config';
-                    case PackageConfiguration: if (property.Type == JsonNodeType.Object)
+                    case PackageConfiguration: if (rootNode.Type == JsonNodeType.Object)
                         {
-                            ReadConfigurationTags(property);
+                            ReadConfigurationTags(rootNode);
                         }
                         break;
                     #endregion
 
                     #region PackageVersionNumber = 'version';
-                    case PackageVersionNumber: if(property.Type == JsonNodeType.String)
+                    case PackageVersionNumber: if(rootNode.Type == JsonNodeType.String)
                         {
-                            version = PackageVersion.Create(property.ToString());
+                            version = PackageVersion.Create(rootNode.ToString());
                             if (version.IsValid && !version.IsCompatibilityVersion)
                                 break;
 
-                            parser.Errors.Add(string.Format(ResponseCodes.PackageInfo.InvalidPackageVersion, property.ToString()));
+                            parser.Errors.Add(string.Format(ResponseCodes.PackageInfo.InvalidPackageVersion, rootNode.ToString()));
                         }
                         return false;
                     #endregion
 
                     #region PackageTags = 'keywords';
-                    case PackageTags: if (property.Type == JsonNodeType.Array)
+                    case PackageTags: if (rootNode.Type == JsonNodeType.Array)
                         {
-                            ReadPropertyTags(property, tags);
+                            ReadPropertyTags(rootNode, tags);
                         }
                         break;
                     #endregion
 
                     #region PackagePrimaryAuthor = 'author';
-                    case PackagePrimaryAuthor: if (property.Type == JsonNodeType.Object)
+                    case PackagePrimaryAuthor: if (rootNode.Type == JsonNodeType.Object)
                         {
-                            authors.Insert(0, ReadPersonEntry(property));
+                            authors.Insert(0, ReadPersonEntry(rootNode));
                         }
                         break;
                     #endregion
 
                     #region PackageAdditionalAuthors = 'contributors';
-                    case PackageAdditionalAuthors: if (property.Type == JsonNodeType.Array)
+                    case PackageAdditionalAuthors: if (rootNode.Type == JsonNodeType.Array)
                         {
-                            ReadAdditionalAuthors(property);
+                            ReadAdditionalAuthors(rootNode);
                         }
                         break;
                     #endregion
 
                     #region PackageReferences = 'dependencies';
-                    case PackageReferences: if (property.Type == JsonNodeType.Object)
+                    case PackageReferences: switch (rootNode.Type)
                         {
-                            if (ReadPackageReferences(property))
-                                break;
-
-                            parser.Errors.Add(ResponseCodes.PackageInfo.InvalidPackageReference);
+                            case JsonNodeType.Empty: break;
+                            case JsonNodeType.Object:
+                                {
+                                    if (ReadPackageReferences(rootNode))
+                                        break;
+                                }
+                                goto default;
+                            default:
+                                {
+                                    parser.Errors.Add(ResponseCodes.PackageInfo.InvalidPackageReference);
+                                    return false;
+                                }
                         }
-                        return false;
+                        break;
                     #endregion
 
                     #region PackageBugTracker = 'bugs';
-                    case PackageBugTracker: if (property.Type == JsonNodeType.Object)
+                    case PackageBugTracker: if (rootNode.Type == JsonNodeType.Object)
                         {
-                            ReadBugTrackerAddress(property);
+                            ReadBugTrackerAddress(rootNode);
                         }
                         break;
                     #endregion
 
                     #region PackageRepositoryInfo = 'repository';
-                    case PackageRepositoryInfo: if (property.Type == JsonNodeType.Object)
+                    case PackageRepositoryInfo: if (rootNode.Type == JsonNodeType.Object)
                         {
-                            ReadRepositoryInfo(property);
+                            ReadRepositoryInfo(rootNode);
                         }
                         break;
                     #endregion
 
                     #region PackageLicense = 'license';
-                    case PackageLicense: if (property.Type == JsonNodeType.String)
+                    case PackageLicense: if (rootNode.Type == JsonNodeType.String)
                         {
-                            license = property.ToString();
+                            license = rootNode.ToString();
                         }
                         break;
                     #endregion
 
                     #region PackageInfoAddress = 'homepage';
-                    case PackageHome: if (property.Type == JsonNodeType.String)
+                    case PackageHome: if (rootNode.Type == JsonNodeType.String)
                         {
-                            Uri.TryCreate(property.ToString(), UriKind.Absolute, out home);
+                            Uri.TryCreate(rootNode.ToString(), UriKind.Absolute, out home);
                         }
                         break;
                     #endregion
 
                     #region IncludedFiles = 'files';
-                    case IncludedFiles: if (property.Type == JsonNodeType.Array)
+                    case IncludedFiles: if (rootNode.Type == JsonNodeType.Array)
                         {
-                            ReadFiles(property);
+                            ReadFiles(rootNode);
+                        }
+                        break;
+                    #endregion
+
+                    #region PackageDistribution = 'dist';
+                    case PackageDistribution: if (rootNode.Type == JsonNodeType.Object)
+                        {
+                            ReadDistributionInfo(rootNode);
+                        }
+                        break;
+                    #endregion
+
+                    #region PackageCommands = 'scripts';
+                    case PackageCommandArguments: if (rootNode.Type == JsonNodeType.Object)
+                        {
+                            ReadCommandArguments(rootNode);
                         }
                         break;
                     #endregion
                 }
-                property = property.Next;
+                rootNode = rootNode.Next;
             }
             return true;
         }
+
         bool ReadPackageReferences(JsonNode property)
         {
             property = property.Child;
@@ -402,7 +475,7 @@ namespace SE.Npm
                         return false;
 
                     PackageVersion ver = PackageVersion.Create(property.ToString());
-                    if (!version.IsValid)
+                    if (!ver.IsValid)
                         return false;
 
                     references.Add(new PackageReference(pid as PackageId, ver));
@@ -431,19 +504,19 @@ namespace SE.Npm
                 switch (property.Name.ToLowerInvariant())
                 {
                     #region StandaloneProgramPackage = 'master';
-                    case ParameterStandalonePackage: if (property.Type == JsonNodeType.String)
+                    case ParameterNames.StandalonePackage: if (property.Type == JsonNodeType.String)
                         {
-                            if (parameter.ContainsKey(ParameterStandalonePackage)) parameter[ParameterStandalonePackage] = property.ToString();
-                            else parameter.Add(ParameterStandalonePackage, property.ToString());
+                            if (parameter.ContainsKey(ParameterNames.StandalonePackage)) parameter[ParameterNames.StandalonePackage] = property.ToString();
+                            else parameter.Add(ParameterNames.StandalonePackage, property.ToString());
                         }
                         break;
                     #endregion
 
                     #region ProgramSubmodulePackage = 'submodule';
-                    case ParameterSubmodulePackage: if (property.Type == JsonNodeType.String)
+                    case ParameterNames.SubmodulePackage: if (property.Type == JsonNodeType.String)
                         {
-                            if (parameter.ContainsKey(ParameterSubmodulePackage)) parameter[ParameterSubmodulePackage] = property.ToString();
-                            else parameter.Add(ParameterSubmodulePackage, property.ToString());
+                            if (parameter.ContainsKey(ParameterNames.SubmodulePackage)) parameter[ParameterNames.SubmodulePackage] = property.ToString();
+                            else parameter.Add(ParameterNames.SubmodulePackage, property.ToString());
                         }
                         break;
                     #endregion
@@ -507,7 +580,7 @@ namespace SE.Npm
                 property = property.Next;
             }
 
-            repository = new PackageRepository(type, url, offset);
+            repository = new RepositoryInfo(type, url, offset);
         }
         void ReadAdditionalAuthors(JsonNode property)
         {
@@ -516,7 +589,7 @@ namespace SE.Npm
             {
                 if (property.Type == JsonNodeType.Object)
                 {
-                    PersonInfo person = ReadPersonEntry(property);
+                    IdentityInfo person = ReadPersonEntry(property);
                     if (person != null)
                         authors.Add(person);
                 }
@@ -524,7 +597,7 @@ namespace SE.Npm
                 property = property.Next;
             }
         }
-        PersonInfo ReadPersonEntry(JsonNode property)
+        IdentityInfo ReadPersonEntry(JsonNode property)
         {
             string name = null;
             string email = null;
@@ -562,7 +635,7 @@ namespace SE.Npm
                 property = property.Next;
             }
 
-            if (!string.IsNullOrWhiteSpace(name)) return new PersonInfo
+            if (!string.IsNullOrWhiteSpace(name)) return new IdentityInfo
              (
                  name,
                  email,
@@ -583,8 +656,55 @@ namespace SE.Npm
             }
             return true;
         }
+        void ReadDistributionInfo(JsonNode property)
+        {
+            string checksum = null;
+            Uri url = null;
 
-        public override bool Save(Stream stream)
+            property = property.Child;
+            while (property != null)
+            {
+                switch (property.Name.ToLowerInvariant())
+                {
+                    #region DistributionChecksum = 'shasum';
+                    case DistributionChecksum: if (property.Type == JsonNodeType.String)
+                        {
+                            checksum = property.ToString();
+                        }
+                        break;
+                    #endregion
+
+                    #region DistributionHome = 'tarball';
+                    case DistributionHome: if (property.Type == JsonNodeType.String)
+                        {
+                            Uri.TryCreate(property.ToString(), UriKind.Absolute, out url);
+                        }
+                        break;
+                    #endregion
+                }
+                property = property.Next;
+            }
+
+            distributionInfo = new DistributionInfo(checksum, url);
+        }
+        void ReadCommandArguments(JsonNode property)
+        {
+            property = property.Child;
+            while (property != null)
+            {
+                if (property.Type == JsonNodeType.String)
+                {
+                    string id = property.Name.ToLowerInvariant();
+                    if (!arguments.ContainsKey(id))
+                    {
+                        arguments.Add(id, property.ToString());
+                    }
+                }
+                property = property.Next;
+            }
+        }
+
+        public override bool Save(Stream stream, Encoding encoding, bool formatted = true)
         {
             Clear();
 
@@ -804,32 +924,91 @@ namespace SE.Npm
             }
             #endregion
 
-            return base.Save(stream);
+            #region PackageDistribution = 'dist'
+            if (distributionInfo != null)
+            {
+                property = AddNode(root, JsonNodeType.Object);
+                property.Name = PackageDistribution;
+
+                JsonNode childProperty = AddNode(property, JsonNodeType.String);
+                childProperty.Name = DistributionChecksum;
+                childProperty.RawValue = distributionInfo.Checksum;
+
+                childProperty = AddNode(property, JsonNodeType.String);
+                childProperty.Name = DistributionHome;
+                childProperty.RawValue = distributionInfo.Url.AbsoluteUri;
+            }
+            #endregion
+
+            #region PackageCommandArguments = 'scripts';
+            if (arguments.Count > 0)
+            {
+                property = AddNode(root, JsonNodeType.Object);
+                property.Name = PackageCommandArguments;
+
+                foreach (KeyValuePair<string, string> argument in arguments)
+                {
+                    JsonNode node = AddNode(property, JsonNodeType.String);
+                    node.RawValue = argument.Value;
+                    node.Name = argument.Key;
+                }
+            }
+            #endregion
+
+            return base.Save(stream, encoding, formatted);
         }
         void SerializeParameter(JsonNode property, KeyValuePair<string, object> param)
         {
             switch (param.Key)
             {
                 #region StandaloneProgramPackage = 'master';
-                case ParameterStandalonePackage:
+                case ParameterNames.StandalonePackage:
                     {
                         property = AddNode(property, JsonNodeType.String);
-                        property.Name = ParameterStandalonePackage;
+                        property.Name = ParameterNames.StandalonePackage;
                         property.RawValue = param.Value;
                     }
                     break;
                 #endregion
 
                 #region ProgramSubmodulePackage = 'submodule';
-                case ParameterSubmodulePackage:
+                case ParameterNames.SubmodulePackage:
                     {
                         property = AddNode(property, JsonNodeType.String);
-                        property.Name = ParameterSubmodulePackage;
+                        property.Name = ParameterNames.SubmodulePackage;
                         property.RawValue = param.Value;
                     }
                     break;
                 #endregion
             }
+        }
+
+        /// <summary>
+        /// Decodes a string from NPM naming convention
+        /// </summary>
+        /// <param name="name">The string to convert</param>
+        /// <returns>The converted string</returns>
+        public static string Decode(string name)
+        {
+            StringBuilder result = new StringBuilder(name);
+            bool turnToUpper = true;
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                if (result[i] == '-')
+                {
+                    result.Remove(i, 1);
+                    i--;
+
+                    turnToUpper = true;
+                }
+                else if (turnToUpper)
+                {
+                    result[i] = Char.ToUpperInvariant(result[i]);
+                    turnToUpper = false;
+                }
+            }
+            return result.ToString();
         }
     }
 }

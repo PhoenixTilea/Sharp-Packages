@@ -21,21 +21,21 @@ namespace SE.Npm
         /// </summary>
         public UInt32 Major
         {
-            get { return (UInt32)(value & 0x3FF); }
+            get { return (UInt32)((value >> 22) & 0x3FF); }
         }
         /// <summary>
         /// The minor version component
         /// </summary>
         public UInt32 Minor
         {
-            get { return (UInt32)((value >> 10) & 0x3FF); }
+            get { return (UInt32)((value >> 12) & 0x3FF); }
         }
         /// <summary>
         /// The revision component
         /// </summary>
         public UInt32 Revision
         {
-            get { return (UInt32)((value >> 20) & 0x3FF); }
+            get { return (UInt32)((value >> 2) & 0x3FF); }
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace SE.Npm
         /// </summary>
         public bool IsCompatibilityVersion
         {
-            get { return (((value >> 30) & 1) == 1); }
+            get { return ((value & 1) == 1); }
         }
         /// <summary>
         /// Determines if this version number is valid
@@ -78,8 +78,8 @@ namespace SE.Npm
         public bool Match(PackageVersion version)
         {
             bool result = (Major == version.Major);
-            result &= (IsCompatibilityVersion || Minor == Minor);
-            result &= (IsCompatibilityVersion || Revision == Revision);
+            result &= ((IsCompatibilityVersion && Minor <= version.Minor) || Minor == version.Minor);
+            result &= (IsCompatibilityVersion || Revision == version.Revision);
 
             return result;
         }
@@ -107,10 +107,10 @@ namespace SE.Npm
         {
             return (UInt32)
             (
-                (UInt32)((major & 0x3FF) << 0) |
-                (UInt32)((minor & 0x3FF) << 10) |
-                (UInt32)((revision & 0x3FF) << 20) |
-                (UInt32)((compatibilityVersion ? 1 : 0) << 30)
+                (UInt32)((major & 0x3FF) << 22) |
+                (UInt32)((minor & 0x3FF) << 12) |
+                (UInt32)((revision & 0x3FF) << 2) |
+                (UInt32)((compatibilityVersion ? 1 : 0))
             );
         }
         /// <summary>

@@ -24,10 +24,7 @@ namespace SE.Npm
                 {
                     return components[0];
                 }
-                else
-                {
-                    return string.Empty;
-                }
+                else return string.Empty;
             }
         }
         /// <summary>
@@ -41,10 +38,7 @@ namespace SE.Npm
                 {
                     return components[1];
                 }
-                else
-                {
-                    return string.Empty;
-                }
+                else return string.Empty;
             }
         }
         /// <summary>
@@ -58,10 +52,7 @@ namespace SE.Npm
                 {
                     return components[2];
                 }
-                else
-                {
-                    return string.Empty;
-                }
+                else return string.Empty;
             }
         }
 
@@ -86,6 +77,16 @@ namespace SE.Npm
 
             if (components.Length != 3)
                 throw new ArgumentOutOfRangeException("value");
+        }
+        /// <summary>
+        /// Creates a new id instance from the provided root id and a scope
+        /// </summary>
+        /// <param name="scope">A string in @<scope> format</param>
+        /// <param name="id">The root id to scope</param>
+        public PackageId(string scope, PackageId id)
+        {
+            this.components = id.components;
+            this.scope = scope;
         }
 
         public override bool Equals(object obj)

@@ -9,7 +9,7 @@ namespace SE.Npm
     /// <summary>
     /// Provides information about a repository inside a package info
     /// </summary>
-    public struct PackageRepository
+    public struct RepositoryInfo
     {
         string type;
         /// <summary>
@@ -41,7 +41,7 @@ namespace SE.Npm
         /// <summary>
         /// Creates a new repository info instance
         /// </summary>
-        public PackageRepository(string type, Uri url, string directory)
+        public RepositoryInfo(string type, Uri url, string directory)
         {
             this.type = type;
             this.url = url;
