@@ -25,6 +25,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - run: npm ci
         working-directory: ${{env.sub-dir}}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - run: npm publish
         working-directory: ${{env.sub-dir}}
         env:
