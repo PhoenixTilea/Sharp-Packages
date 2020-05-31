@@ -1,1 +1,25 @@
-{"name":"@schroedingerentertainment/se.sharp.storage","description":"Utility module to improve file system operations in C#","homepage":"https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Storage/Sharp","license":"AGPL-3.0-or-later","author":{"name":"Shaarigan","url":"https://github.com/Shaarigan"},"version":"1.1.0","dependencies":{"@schroedingerentertainment/se.sharp.common":"^1.1.0"},"keywords":["c#","csharp","sharp","module"],"repository":{"url":"https://github.com/SchroedingerEntertainment/Sharp-Packages.git","type":"git","directory":"SE@Storage/Sharp"}}
+﻿{
+    "name" : "@schroedingerentertainment/se.sharp.storage",
+    "description" : "Utility module to improve file system operations in C#",
+    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Storage/Sharp",
+    "license" : "AGPL-3.0-or-later",
+    "author" : {
+        "name" : "Shaarigan",
+        "url" : "https://github.com/Shaarigan"
+    },
+    "version" : "1.2.0",
+    "dependencies" : {
+        "@schroedingerentertainment/se.sharp.common" : "^1.2.0"
+    },
+    "keywords" : [
+        "c#",
+        "csharp",
+        "sharp",
+        "module"
+    ],
+    "repository" : {
+        "url" : "https://github.com/SchroedingerEntertainment/Sharp-Packages.git",
+        "type" : "git",
+        "directory" : "SE@Storage/Sharp"
+    }
+}

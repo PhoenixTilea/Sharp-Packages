@@ -13,6 +13,7 @@ namespace SE.Storage
     public enum FileSystemEntryType : byte
     {
         File = 0,
-        Directory = 1
+        Directory = 1,
+        Remote = 2
     }
 }

@@ -51,6 +51,18 @@ namespace SE.Storage
         }
 
         /// <summary>
+        /// Determines if the file system locations has any children
+        /// </summary>
+        public bool IsEmpty
+        {
+            get 
+            {
+                DirectoryInfo dir = new DirectoryInfo(GetAbsolutePath());
+                return !(dir.EnumerateDirectories().Any() || dir.EnumerateFiles().Any());
+            }
+        }
+
+        /// <summary>
         /// This location's parent directory
         /// </summary>
         public PathDescriptor Parent
