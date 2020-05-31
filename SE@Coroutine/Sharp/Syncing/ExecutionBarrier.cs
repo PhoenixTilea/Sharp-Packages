@@ -48,7 +48,7 @@ namespace SE.Parallel.Coroutines
             guardLock = new ReadWriteLock();
         }
 
-        public void OnResolve(object value)
+        public void OnResolve(object value = null)
         {
             IExecutionGuard context = Guard;
             if (context != null) context.Set(value);
