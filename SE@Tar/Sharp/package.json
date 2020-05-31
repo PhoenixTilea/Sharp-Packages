@@ -1,0 +1,22 @@
+﻿{
+    "name" : "@schroedingerentertainment/se.sharp.tar",
+    "description" : ".tar encoded file reader extension",
+    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Tar/Sharp",
+    "license" : "AGPL-3.0-or-later",
+    "author" : {
+        "name" : "Shaarigan",
+        "url" : "https://github.com/Shaarigan"
+    },
+    "version" : "1.0.0",
+    "keywords" : [
+        "c#",
+        "csharp",
+        "sharp",
+        "module"
+    ],
+    "repository" : {
+        "url" : "https://github.com/SchroedingerEntertainment/Sharp-Packages.git",
+        "type" : "git",
+        "directory" : "SE@Tar/Sharp"
+    }
+}
