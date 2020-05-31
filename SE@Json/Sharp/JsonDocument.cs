@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using SE;
 
 namespace SE.Json
@@ -27,6 +28,7 @@ namespace SE.Json
         }
 
         protected JsonParser parser;
+
         /// <summary>
         /// A collection of error messages since last document parsing
         /// </summary>
@@ -174,112 +176,139 @@ namespace SE.Json
         /// </summary>
         /// <param name="stream">The stream to load content from</param>
         /// <returns>True if content was successfully parsed, false otherwise</returns>
-        public virtual bool Load(Stream stream)
+        public virtual bool Load(Stream stream, Encoding encoding)
         {
             Clear();
 
             if(parser == null) parser = new JsonParser(this);
-            return parser.Parse(stream, true);
+            return parser.Parse(stream, encoding, true);
+        }
+        /// <summary>
+        /// Tries to load this Document's content from a given stream
+        /// </summary>
+        /// <param name="stream">The stream to load content from</param>
+        /// <returns>True if content was successfully parsed, false otherwise</returns>
+        public virtual bool Load(Stream stream)
+        {
+            return Load(stream, null);
+        }
+
+        /// <summary>
+        /// Tries to save this Document's content to a given stream
+        /// </summary>
+        /// <param name="stream">The stream to save content to</param>
+        /// <returns>True if content was successfully saved, false otherwise</returns>
+        public virtual bool Save(Stream stream, Encoding encoding, bool formatted = false)
+        {
+            if (nodes.Count <= 0)
+                return false;
+
+            JsonNode root = nodes[0];
+            using (StreamWriter sw = new StreamWriter(stream, encoding))
+            {
+                Serialize(sw, formatted, root);
+            }
+            return true;
         }
         /// <summary>
         /// Tries to save this Document's content to a given stream
         /// </summary>
         /// <param name="stream">The stream to save content to</param>
         /// <returns>True if content was successfully saved, false otherwise</returns>
-        public virtual bool Save(Stream stream)
+        public virtual bool Save(Stream stream, bool formatted = false)
         {
-            if (nodes.Count <= 0)
-                return false;
-
-            JsonNode root = nodes[0];
-            Serialize(stream, root);
-            stream.Flush();
-
-            return true;
+            return Save(stream, Encoding.UTF8, formatted);
         }
 
-        void Serialize(Stream stream, JsonNode node)
+        void Serialize(StreamWriter sw, bool formatted, JsonNode node, int indentation = 0)
         {
-            if (node.Name != null && node.Name.Length > 0)
+            if (formatted)
             {
-                stream.WriteByte((byte)'"');
-
-                byte[] tmp = new byte[node.Name.Length];
-                for (int i = 0; i < tmp.Length; i++)
-                    tmp[i] = (byte)node.Name[i];
-
-                stream.Write(tmp, 0, tmp.Length);
-
-                stream.WriteByte((byte)'\"');
-                stream.WriteByte((byte)':');
+                sw.Write(string.Empty.PadLeft(indentation));
             }
-
+            if (node.Name != null)
+            {
+                sw.Write("\"{0}\"", node.Name.Replace("\"", "\\\""));
+                if (formatted)
+                {
+                    sw.Write(" : ");
+                }
+                else sw.Write(':');
+            }
             switch (node.Type)
             {
+                case JsonNodeType.Empty:
+                    {
+                        sw.Write("null");
+                    }
+                    break;
                 case JsonNodeType.Object:
                     {
-                        stream.WriteByte((byte)'{');
+                        sw.Write('{');
                         if (node.Child != null)
-                            Serialize(stream, node.Child);
-                        stream.WriteByte((byte)'}');
+                        {
+                            if (formatted)
+                            {
+                                sw.WriteLine();
+                            }
+                            Serialize(sw, formatted, node.Child, indentation + 4);
+                            if (formatted)
+                            {
+                                sw.WriteLine();
+                                sw.Write(string.Empty.PadLeft(indentation));
+                            }
+                        }
+                        sw.Write('}');
                     }
                     break;
                 case JsonNodeType.Array:
                     {
-                        stream.WriteByte((byte)'[');
+                        sw.Write('[');
                         if (node.Child != null)
-                            Serialize(stream, node.Child);
-                        stream.WriteByte((byte)']');
+                        {
+                            if (formatted)
+                            {
+                                sw.WriteLine();
+                            }
+                            Serialize(sw, formatted, node.Child, indentation + 4);
+                            if (formatted)
+                            {
+                                sw.WriteLine();
+                                sw.Write(string.Empty.PadLeft(indentation));
+                            }
+                        }
+                        sw.Write(']');
                     }
                     break;
                 case JsonNodeType.Bool:
                     {
-                        string str = node.ToBoolean().ToString().ToLowerInvariant();
-                        byte[] tmp = new byte[str.Length];
-                        for (int i = 0; i < tmp.Length; i++)
-                            tmp[i] = (byte)str[i];
-
-                        stream.Write(tmp, 0, tmp.Length);
+                        sw.Write(node.ToBoolean().ToString().ToLowerInvariant());
                     }
                     break;
                 case JsonNodeType.Integer:
                     {
-                        string str = node.ToInteger().ToString(System.Globalization.CultureInfo.InvariantCulture);
-                        byte[] tmp = new byte[str.Length];
-                        for (int i = 0; i < tmp.Length; i++)
-                            tmp[i] = (byte)str[i];
-
-                        stream.Write(tmp, 0, tmp.Length);
+                        sw.Write(node.ToInteger().ToString(System.Globalization.CultureInfo.InvariantCulture));
                     }
                     break;
                 case JsonNodeType.Decimal:
                     {
-                        string str = node.ToDecimal().ToString(System.Globalization.CultureInfo.InvariantCulture);
-                        byte[] tmp = new byte[str.Length];
-                        for (int i = 0; i < tmp.Length; i++)
-                            tmp[i] = (byte)str[i];
-
-                        stream.Write(tmp, 0, tmp.Length);
+                        sw.Write(node.ToDecimal().ToString(System.Globalization.CultureInfo.InvariantCulture));
                     }
                     break;
                 case JsonNodeType.String:
                     {
-                        stream.WriteByte((byte)'"');
-                        string str = node.ToString();
-                        byte[] tmp = new byte[str.Length];
-                        for (int i = 0; i < tmp.Length; i++)
-                            tmp[i] = (byte)str[i];
-
-                        stream.Write(tmp, 0, tmp.Length);
-                        stream.WriteByte((byte)'"');
+                        sw.Write("\"{0}\"", node.ToString().Replace("\"", "\\\""));
                     }
                     break;
             }
-
             if (node.Next != null)
             {
-                stream.WriteByte((byte)',');
-                Serialize(stream, node.Next);
+                if (formatted)
+                {
+                    sw.WriteLine(',');
+                }
+                else sw.Write(',');
+                Serialize(sw, formatted, node.Next, indentation);
             }
         }
     }
