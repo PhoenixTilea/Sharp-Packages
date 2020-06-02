@@ -1,13 +1,13 @@
 ﻿{
-    "name" : "@schroedingerentertainment/se.sharp.bridge",
-    "description" : "Provides cross language interaction features",
-    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Bridge/Sharp",
+    "name" : "@schroedingerentertainment/se.sharp.reactive",
+    "description" : "Lightweight implementation of reactive data streams",
+    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Reactive/Sharp",
     "license" : "AGPL-3.0-or-later",
     "author" : {
         "name" : "Shaarigan",
         "url" : "https://github.com/Shaarigan"
     },
-    "version" : "1.1.0",
+    "version" : "1.0.0",
     "dependencies" : {
         "@schroedingerentertainment/se.sharp.common" : "^1.2.0"
     },
@@ -20,6 +20,6 @@
     "repository" : {
         "url" : "https://github.com/SchroedingerEntertainment/Sharp-Packages.git",
         "type" : "git",
-        "directory" : "SE@Bridge/Sharp"
+        "directory" : "SE@Reactive/Sharp"
     }
 }

@@ -1,1 +1,25 @@
-{"name":"@schroedingerentertainment/se.sharp.compound","description":"Entity Component Package for C#.Net","homepage":"https://github.com/SchroedingerEntertainment/Sharp-Packages/SE@Compound/Sharp","license":"AGPL-3.0-or-later","author":{"name":"Shaarigan","url":"https://github.com/Shaarigan"},"version":"1.0.0","dependencies":{"@schroedingerentertainment/se.sharp.common":"^1.0.0"},"keywords":[""],"repository":{"url":"https://github.com/SchroedingerEntertainment/Sharp-Packages.git","type":"git","directory":"SE@Compound/Sharp"}}
+﻿{
+    "name" : "@schroedingerentertainment/se.sharp.compound",
+    "description" : "(D)ynamic (L)anguage (R)untime based object extension framework ",
+    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Compound/Sharp",
+    "license" : "AGPL-3.0-or-later",
+    "author" : {
+        "name" : "Shaarigan",
+        "url" : "https://github.com/Shaarigan"
+    },
+    "version" : "1.1.0",
+    "dependencies" : {
+        "@schroedingerentertainment/se.sharp.common" : "^1.2.0"
+    },
+    "keywords" : [
+        "c#",
+        "csharp",
+        "sharp",
+        "module"
+    ],
+    "repository" : {
+        "url" : "https://github.com/SchroedingerEntertainment/Sharp-Packages.git",
+        "type" : "git",
+        "directory" : "SE@Compound/Sharp"
+    }
+}
