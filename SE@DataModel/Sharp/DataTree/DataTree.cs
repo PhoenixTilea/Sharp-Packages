@@ -16,7 +16,7 @@ namespace SE.DataModel
     {
         protected HashSet<T> nodes;
         /// <summary>
-        /// The number of odes contained in this tree
+        /// The number of nodes contained in this tree
         /// </summary>
         public int Count
         {
@@ -67,7 +67,7 @@ namespace SE.DataModel
         /// Tries to remove the entire node hierarchy from this tree
         /// </summary>
         /// <returns>True if the nodes was removed successfully, false otherwise</returns>
-        public bool RemoveNode(T node)
+        public virtual bool RemoveNode(T node)
         {
             if (node == null)
                 return false;
@@ -100,7 +100,7 @@ namespace SE.DataModel
         /// <summary>
         /// Removes all nodes from this tree
         /// </summary>
-        public void Clear()
+        public virtual void Clear()
         {
             foreach (T node in nodes)
                 RemoveNode(node);
