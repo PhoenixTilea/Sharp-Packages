@@ -41,6 +41,75 @@ namespace SE.Crypto
 			LongMath.AssignZero(scalar, curve.Words);
             LongMath.Assign(scalar, tc, curve.Words);
 		}
+        private static void Unpack(EcCurve curve, EcPoint key, UInt64[] r, UInt64[] s, UInt64[] hash, UInt64[] rX)
+        {
+            UInt64[] z = new UInt64[curve.Words];
+            UInt64[] u1 = new UInt64[curve.Words];
+            UInt64[] u2 = new UInt64[curve.Words];
+            LongMath.ModInv(z, s, curve.N, curve.Words);
+
+            LongMath.ModMult(u1, hash, z, curve.N, curve.Words);
+            LongMath.ModMult(u2, r, z, curve.N, curve.Words);
+
+            EcPoint pq = new EcPoint(curve.Words);
+            LongMath.Assign(pq.X, key.X, curve.Words);
+            LongMath.Assign(pq.Y, key.Y, curve.Words);
+
+            UInt64[] tX = new UInt64[curve.Words];
+            UInt64[] tY = new UInt64[curve.Words];
+            UInt64[] tZ = new UInt64[curve.Words];
+            LongMath.Assign(tX, curve.G.X, curve.Words);
+            LongMath.Assign(tY, curve.G.Y, curve.Words);
+            LongMath.ModSub(z, pq.X, curve.G.X, curve.P, curve.Words);
+            EcMath.Add(curve, tX, tY, pq.X, pq.Y);
+            LongMath.ModInv(z, z, curve.P, curve.Words);
+            EcMath.Add(curve, pq.X, pq.Y, z);
+
+            EcPoint[] shamirPoints = new EcPoint[4]
+            {
+                null,
+                curve.G,
+                key,
+                pq
+            };
+            int bits = Math.Max(LongMath.GetBits(u1, curve.Words), LongMath.GetBits(u2, curve.Words));
+
+            EcPoint p = shamirPoints
+            [
+                ((LongMath.GetBitLong(u1, bits - 1, curve.Words)) ? 1 : 0) |
+                (((LongMath.GetBitLong(u2, bits - 1, curve.Words)) ? 1 : 0) << 1)
+            ];
+
+            UInt64[] rY = new UInt64[curve.Words];
+            LongMath.Assign(rX, p.X, curve.Words);
+            LongMath.Assign(rY, p.Y, curve.Words);
+            LongMath.AssignZero(z, curve.Words);
+            z[0] = 1;
+
+            for (int i = (bits - 2); i >= 0; i--)
+            {
+                EcMath.Double(curve, rX, rY, z);
+                p = shamirPoints
+                [
+                    ((LongMath.GetBitLong(u1, i, curve.Words)) ? 1 : 0) |
+                    (((LongMath.GetBitLong(u2, i, curve.Words)) ? 1 : 0) << 1)
+                ];
+                if (p != null)
+                {
+                    LongMath.Assign(tX, p.X, curve.Words);
+                    LongMath.Assign(tY, p.Y, curve.Words);
+                    EcMath.Add(curve, tX, tY, z);
+                    LongMath.ModSub(tZ, rX, tX, curve.P, curve.Words);
+                    EcMath.Add(curve, tX, tY, rX, rY);
+                    EcMath.ModMult(curve, z, z, tZ);
+                }
+            }
+            LongMath.ModInv(z, z, curve.P, curve.Words);
+            EcMath.Add(curve, rX, rY, z);
+
+            if (LongMath.Compare(curve.N, rX, curve.Words) != 1)
+                LongMath.Sub(rX, rX, curve.N, curve.Words);
+        }
 
         /// <summary>
         /// Creates a new Elliptic Curve Cryptography Data Signing private key from
@@ -80,6 +149,7 @@ namespace SE.Crypto
             }
             while (LongMath.IsZero(privateKey, curve.Words));
         }
+
         /// <summary>
         /// Creates the coresponding Elliptic Curve Cryptography Data Signing public key
         /// from a given private key
@@ -109,6 +179,7 @@ namespace SE.Crypto
             if (EcMath.IsZero(tmp)) return 0;
 		    else return (byte)(2 + (tmp.Y[0] & 0x01));
 	    }
+
         /// <summary>
         /// Creates a private secret key from two Elliptic Curve Cryptography keys. This
         /// key could be used to sign data using Elliptic Curve Cryptography Data Signing Algorithm
@@ -124,6 +195,7 @@ namespace SE.Crypto
 
 		    LongMath.ModAdd(sharedPrivateKey, selfPrivateKey, c, curve.N, curve.Words);
 	    }
+
         /// <summary>
         /// Creates a public secret key from two Elliptic Curve Cryptography keys. This
         /// key could be used to verify data using Elliptic Curve Cryptography Data Signing Algorithm
@@ -174,6 +246,7 @@ namespace SE.Crypto
             LongMath.ModInv(k, k, curve.N, curve.Words);
             LongMath.ModMult(signature.Y, signature.Y, k, curve.N, curve.Words);
         }
+
         /// <summary>
         /// Verifies a signature pair to confirm the coresponding Elliptic Curve Cryptography
         /// public key
@@ -188,80 +261,50 @@ namespace SE.Crypto
             if (LongMath.IsZero(signature.X, curve.Words) || LongMath.IsZero(signature.Y, curve.Words)) return false;
             if (LongMath.Compare(curve.N, signature.X, curve.Words) != 1 || LongMath.Compare(curve.N, signature.Y, curve.Words) != 1) return false;
 
-            UInt64[] z = new UInt64[curve.Words];
-            UInt64[] u1 = new UInt64[curve.Words];
-            UInt64[] u2 = new UInt64[curve.Words];
-            LongMath.ModInv(z, signature.Y, curve.N, curve.Words);
-
-            UInt64[] tt = new UInt64[curve.Words];
+            UInt64[] hashValue = new UInt64[curve.Words];
             int length = Math.Min(curve.Words, hash.Length / 8);
             for (int i = 0; i < length; i++)
-                tt[i] = BitConverter.ToUInt64(hash, (i * 8));
-
-            LongMath.ModMult(u1, tt, z, curve.N, curve.Words);
-            LongMath.ModMult(u2, signature.X, z, curve.N, curve.Words);
-
-            EcPoint pq = new EcPoint(curve.Words);
-            LongMath.Assign(pq.X, publicKey.X, curve.Words);
-            LongMath.Assign(pq.Y, publicKey.Y, curve.Words);
-
-            UInt64[] tX = new UInt64[curve.Words];
-            UInt64[] tY = new UInt64[curve.Words];
-            UInt64[] tZ = new UInt64[curve.Words];
-            LongMath.Assign(tX, curve.G.X, curve.Words);
-            LongMath.Assign(tY, curve.G.Y, curve.Words);
-            LongMath.ModSub(z, pq.X, curve.G.X, curve.P, curve.Words);
-            EcMath.Add(curve, tX, tY, pq.X, pq.Y);
-            LongMath.ModInv(z, z, curve.P, curve.Words);
-            EcMath.Add(curve, pq.X, pq.Y, z);
-
-            EcPoint[] shamirPoints = new EcPoint[4]
-            { 
-                null, 
-                curve.G, 
-                publicKey,
-                pq
-            };
-            int bits = Math.Max(LongMath.GetBits(u1, curve.Words), LongMath.GetBits(u2, curve.Words));
-
-            EcPoint p = shamirPoints
-            [
-                ((LongMath.GetBitLong(u1, bits - 1, curve.Words)) ? 1 : 0) |
-                (((LongMath.GetBitLong(u2, bits - 1, curve.Words)) ? 1 : 0) << 1)
-            ];
+                hashValue[i] = BitConverter.ToUInt64(hash, (i * 8));
 
             UInt64[] rX = new UInt64[curve.Words];
-            UInt64[] rY = new UInt64[curve.Words];
-            LongMath.Assign(rX, p.X, curve.Words);
-            LongMath.Assign(rY, p.Y, curve.Words);
-            LongMath.AssignZero(z, curve.Words);
-            z[0] = 1;
-
-            for (int i = (bits - 2); i >= 0; i--)
-            {
-                EcMath.Double(curve, rX, rY, z);
-                p = shamirPoints
-                [
-                    ((LongMath.GetBitLong(u1, i, curve.Words)) ? 1 : 0) |
-                    (((LongMath.GetBitLong(u2, i, curve.Words)) ? 1 : 0) << 1)
-                ];
-                if (p != null)
-                {
-                    LongMath.Assign(tX, p.X, curve.Words);
-                    LongMath.Assign(tY, p.Y, curve.Words);
-                    EcMath.Add(curve, tX, tY, z);
-                    LongMath.ModSub(tZ, rX, tX, curve.P, curve.Words);
-                    EcMath.Add(curve, tX, tY, rX, rY);
-                    EcMath.ModMult(curve, z, z, tZ);
-                }
-            }
-            LongMath.ModInv(z, z, curve.P, curve.Words);
-            EcMath.Add(curve, rX, rY, z);
-
-            if (LongMath.Compare(curve.N, rX, curve.Words) != 1)
-                LongMath.Sub(rX, rX, curve.N, curve.Words);
+            Unpack(curve, publicKey, signature.X, signature.Y, hashValue, rX);
 
             return (LongMath.Compare(rX, signature.X, curve.Words) == 0);
+        }
+
+        /// <summary>
+        /// Tries to recalculate the public key of a decent signed message
+        /// </summary>
+        /// <param name="curve">The curve in which order the key should exist</param>
+        /// <param name="publicKey">The resulting public key</param>
+        /// <param name="hash">The hash value the signature was computed from</param>
+        /// <param name="signature">The signature pair to verify against</param>
+        /// <param name="recid">An optional hint for the calculation to allow faster arithmetic</param>
+        /// <returns>The composed recid if the signature pair matches the generated public key, false otherwise</returns>
+        public static int Recover(EcCurve curve, EcPoint publicKey, byte[] hash, EcPoint signature, int recid = 0)
+        {
+            UInt64[] hashValue = new UInt64[curve.Words];
+            int length = Math.Min(curve.Words, hash.Length / 8);
+            for (int i = 0; i < length; i++)
+                hashValue[i] = BitConverter.ToUInt64(hash, (i * 8));
+
+            UInt64[] rX = new UInt64[curve.Words];
+            for (int i = (recid & 2); i < 2; i++)
+            {
+                LongMath.AssignZero(rX, curve.Words);
+                EcMath.Expand(curve, publicKey, signature.X, (byte)i);
+
+                Unpack(curve, publicKey, signature.Y, signature.X, hashValue, rX);
+                for (int j = (recid & 1); j < 2; j++)
+                {
+                    EcMath.Expand(curve, publicKey, rX, (byte)j);
+                    if (Verify(curve, publicKey, hash, signature))
+                    {
+                        return (i << 1 | j);
+                    }
+                }
+            }
+            return -1;
         }
     }
 }

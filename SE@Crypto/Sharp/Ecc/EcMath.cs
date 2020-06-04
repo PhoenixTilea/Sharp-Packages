@@ -322,23 +322,34 @@ namespace SE.Crypto
 		/// </summary>
 		public static bool Decompress(EcCurve curve, EcPoint a, byte[] compressed)
 		{
-			UInt64[] _3 = new UInt64[curve.Words];
-            _3[0] = 3;
-
 			if (compressed[0] == 0x04)
 				return false;
 
             Decode(a.X, 0, compressed, 1, a.Size);
+			Expand(curve, a, a.X, compressed[0]);
+
+			return true;
+		}
+
+		/// <summary>
+		/// Expands the given X-coord b into an ECC point a
+		/// </summary>
+		public static void Expand(EcCurve curve, EcPoint a, UInt64[] b, byte signalBit)
+		{
+			UInt64[] _3 = new UInt64[curve.Words];
+			_3[0] = 3;
+
+			LongMath.Assign(a.X, b, curve.Words);
 			ModMult(curve, a.Y, a.X, a.X);
 			LongMath.ModSub(a.Y, a.Y, _3, curve.P, curve.Words);
 			ModMult(curve, a.Y, a.Y, a.X);
 			LongMath.ModAdd(a.Y, a.Y, curve.B, curve.P, curve.Words);
-    
-			ModSqrt(curve, a.Y, a.Y);
-			if((int)(a.Y[0] & 0x01) != (compressed[0] & 0x01))
-				LongMath.Sub(a.Y, curve.P, a.Y, curve.Words);
 
-			return true;
+			ModSqrt(curve, a.Y, a.Y);
+			if ((int)(a.Y[0] & 0x01) != (signalBit & 0x01))
+			{
+				LongMath.Sub(a.Y, curve.P, a.Y, curve.Words);
+			}
 		}
-    }
+	}
 }
