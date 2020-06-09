@@ -10,9 +10,10 @@ namespace SE.Storage
     /// <summary>
     /// Flags pointing to the seek direction in file system traversal
     /// </summary>
-    public enum PathSeekDirection : byte
+    public enum PathSeekOptions : byte
     {
-        Forward,
-        Backward
+        Forward = 0x1,
+        Backward = 0x2,
+        RootLevel = 0x4
     }
 }

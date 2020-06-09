@@ -18,13 +18,13 @@ namespace SE.Storage
         /// <param name="option">An option flag to define the kind of entries to seek for</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>The resulting list of file system entries</returns>
-        public static void FindEntries(PathDescriptor directory, Filter filter, PathEntryOption option, PathSeekDirection direction, ICollection<FileSystemDescriptor> items)
+        public static void FindEntries(PathDescriptor directory, Filter filter, PathEntryOption option, PathSeekOptions options, ICollection<FileSystemDescriptor> items)
         {
             if (directory.Exists())
             {
                 DirectoryInfo dir = new DirectoryInfo(directory.GetAbsolutePath());
-                if ((option & PathEntryOption.Directory) == PathEntryOption.Directory) FindDirectories(filter, dir, "", direction == PathSeekDirection.Backward, items);
-                if ((option & PathEntryOption.File) == PathEntryOption.File) FindFiles(filter, dir, "", direction == PathSeekDirection.Backward, items);
+                if ((option & PathEntryOption.Directory) == PathEntryOption.Directory) FindDirectories(filter, dir, "", (options & PathSeekOptions.Backward) == PathSeekOptions.Backward, (options & PathSeekOptions.RootLevel) != PathSeekOptions.RootLevel, items);
+                if ((option & PathEntryOption.File) == PathEntryOption.File) FindFiles(filter, dir, "", (options & PathSeekOptions.Backward) == PathSeekOptions.Backward, (options & PathSeekOptions.RootLevel) != PathSeekOptions.RootLevel, items);
             }
         }
         /// <summary>
@@ -35,7 +35,7 @@ namespace SE.Storage
         /// <param name="option">An option flag to define the kind of entries to seek for</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>The resulting list of file system entries</returns>
-        public static void FindEntries(PathDescriptor directory, string pattern, PathEntryOption option, PathSeekDirection direction, ICollection<FileSystemDescriptor> items)
+        public static void FindEntries(PathDescriptor directory, string pattern, PathEntryOption option, PathSeekOptions direction, ICollection<FileSystemDescriptor> items)
         {
             Filter filter = new Filter();
 
@@ -70,7 +70,7 @@ namespace SE.Storage
         /// <param name="option">An option flag to define the kind of entries to seek for</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>The resulting list of file system entries</returns>
-        public static List<FileSystemDescriptor> FindEntries(PathDescriptor directory, Filter filter, PathEntryOption option, PathSeekDirection direction)
+        public static List<FileSystemDescriptor> FindEntries(PathDescriptor directory, Filter filter, PathEntryOption option, PathSeekOptions direction)
         {
             List<FileSystemDescriptor> items = new List<FileSystemDescriptor>();
             FindEntries(directory, filter, option, direction, items);
@@ -85,7 +85,7 @@ namespace SE.Storage
         /// <param name="option">An option flag to define the kind of entries to seek for</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>The resulting list of file system entries</returns>
-        public static List<FileSystemDescriptor> FindEntries(PathDescriptor directory, string pattern, PathEntryOption option, PathSeekDirection direction)
+        public static List<FileSystemDescriptor> FindEntries(PathDescriptor directory, string pattern, PathEntryOption option, PathSeekOptions direction)
         {
             List<FileSystemDescriptor> items = new List<FileSystemDescriptor>();
             FindEntries(directory, pattern, option, direction, items);

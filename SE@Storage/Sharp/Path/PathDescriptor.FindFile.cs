@@ -17,7 +17,7 @@ namespace SE.Storage
         /// <param name="pattern">A pattern that will be translated into a filter object</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>The resulting list of file system entries</returns>
-        public List<FileSystemDescriptor> FindFiles(string pattern, PathSeekDirection direction = PathSeekDirection.Forward)
+        public List<FileSystemDescriptor> FindFiles(string pattern, PathSeekOptions direction = PathSeekOptions.Forward)
         {
             return FindEntries(this, pattern, PathEntryOption.File, direction);
         }
@@ -28,7 +28,7 @@ namespace SE.Storage
         /// <param name="pattern">A pattern that will be translated into a filter object</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>The resulting list of file system entries</returns>
-        public List<FileSystemDescriptor> FindFiles(Filter filter, PathSeekDirection direction = PathSeekDirection.Forward)
+        public List<FileSystemDescriptor> FindFiles(Filter filter, PathSeekOptions direction = PathSeekOptions.Forward)
         {
             return FindEntries(this, filter, PathEntryOption.File, direction);
         }
@@ -39,7 +39,7 @@ namespace SE.Storage
         /// <param name="pattern">A filter object to apply to the</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>The resulting list of file system entries</returns>
-        public int FindFiles(Filter filter, ICollection<FileSystemDescriptor> files, PathSeekDirection direction = PathSeekDirection.Forward)
+        public int FindFiles(Filter filter, ICollection<FileSystemDescriptor> files, PathSeekOptions direction = PathSeekOptions.Forward)
         {
             FindEntries(this, filter, PathEntryOption.File, direction, files);
             return files.Count;
@@ -51,7 +51,7 @@ namespace SE.Storage
         /// <param name="pattern">A filter object to apply to the</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>The resulting list of file system entries</returns>
-        public int FindFiles(string pattern, ICollection<FileSystemDescriptor> files, PathSeekDirection direction = PathSeekDirection.Forward)
+        public int FindFiles(string pattern, ICollection<FileSystemDescriptor> files, PathSeekOptions direction = PathSeekOptions.Forward)
         {
             FindEntries(this, pattern, PathEntryOption.File, direction, files);
             return files.Count;
@@ -65,7 +65,7 @@ namespace SE.Storage
         /// <param name="file">The resulting file system entry</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>True if at least one file system entry matched the pattern, false otherwise</returns>
-        public bool FindFile(string pattern, out FileDescriptor file, PathSeekDirection direction = PathSeekDirection.Forward)
+        public bool FindFile(string pattern, out FileDescriptor file, PathSeekOptions direction = PathSeekOptions.Forward)
         {
             List<FileSystemDescriptor> files = FindFiles(pattern, direction);
             if (files.Count != 0) file = (files[0] as FileDescriptor);
@@ -81,7 +81,7 @@ namespace SE.Storage
         /// /// <param name="file">The resulting file system entry</param>
         /// <param name="direction">The direction to traverse the file system tree</param>
         /// <returns>True if at least one file system entry matched the pattern, false otherwise</returns>
-        public bool FindFile(Filter filter, out FileDescriptor file, PathSeekDirection direction = PathSeekDirection.Forward)
+        public bool FindFile(Filter filter, out FileDescriptor file, PathSeekOptions direction = PathSeekOptions.Forward)
         {
             List<FileSystemDescriptor> files = FindFiles(filter, direction);
             if (files.Count != 0) file = (files[0] as FileDescriptor);
@@ -90,7 +90,7 @@ namespace SE.Storage
             return (file != null);
         }
 
-        private static void FindFiles(Filter filter, DirectoryInfo directory, string relativePath, bool reverseLookup, ICollection<FileSystemDescriptor> items)
+        private static void FindFiles(Filter filter, DirectoryInfo directory, string relativePath, bool reverseLookup, bool iterate, ICollection<FileSystemDescriptor> items)
         {
             try
             {
@@ -100,12 +100,15 @@ namespace SE.Storage
                     if (IsExactMatch(filter, path.Split('/')) && !file.Attributes.HasFlag(FileAttributes.ReparsePoint))
                         items.Add(new FileDescriptor(new PathDescriptor(file.DirectoryName), file.Name));
                 }
-                foreach (DirectoryInfo dir in directory.EnumerateDirectories())
+                if (iterate)
                 {
-                    string path = relativePath + dir.Name;
-                    FindFiles(filter, dir, path + "/", false, items);
+                    foreach (DirectoryInfo dir in directory.EnumerateDirectories())
+                    {
+                        string path = relativePath + dir.Name;
+                        FindFiles(filter, dir, path + "/", false, true, items);
+                    }
                 }
-                if (reverseLookup && items.Count == 0) FindFiles(filter, directory.Parent, "", reverseLookup, items);
+                if (iterate && reverseLookup && items.Count == 0) FindFiles(filter, directory.Parent, "", reverseLookup, true, items);
             }
             catch { }
         }

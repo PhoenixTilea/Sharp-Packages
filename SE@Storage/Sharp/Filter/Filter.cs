@@ -104,7 +104,7 @@ namespace SE.Storage
             nodes.Add(node);
         }
 
-        void AddChild(FilterToken root, FilterToken child)
+        public void AddChild(FilterToken root, FilterToken child)
         {
             if (root.Child == null) root.Child = child;
             else
