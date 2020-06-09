@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace SE
@@ -71,13 +72,13 @@ namespace SE
             {
                 for (int i = 0; i < items.Length; i++)
                 {
-                    item = items[i];
+                    item = items[i]; 
                     if (item != null && Interlocked.CompareExchange<T>(ref items[i], null, item) == item)
                         return item;
                 }
-                item = policy.Create();
+                return policy.Create();
             }
-            return item;
+            else return item;
         }
 
         /// <summary>
@@ -91,18 +92,42 @@ namespace SE
             if (instance == null)
                 return false;
 
+            #if DEBUG
+            Validate(instance);
+            #endif
+
             if (policy.Return(instance))
             {
-                if (Interlocked.CompareExchange(ref head, instance, null) != null)
+                if (Interlocked.CompareExchange<T>(ref head, instance, null) != null)
                 {
-                    int i = 0; for (; i < items.Length && Interlocked.CompareExchange<T>(ref items[i], instance, null) != null; i++)
-                        ;
-                    if (i >= items.Length)
-                        policy.Delete(instance);
+                    for (int i = 0; i < items.Length; i++)
+                    {
+                        if (Interlocked.CompareExchange<T>(ref items[i], instance, null) == null)
+                        {
+                            return true;
+                        }
+                    }
+                    return policy.Delete(instance);
                 }
-                return true;
+                else return true;
             }
             else return policy.Delete(instance);
         }
+
+        #if DEBUG
+        void Validate(T instance)
+        {
+            Debug.Assert(head != instance);
+            for (int i = 0; i < items.Length; i++)
+            {
+                T item = items[i];
+                if (item == null)
+                {
+                    return;
+                }
+                Debug.Assert(item != instance);
+            }
+        }
+        #endif
     }
 }
