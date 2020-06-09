@@ -995,17 +995,28 @@ namespace SE.Npm
 
             for (int i = 0; i < result.Length; i++)
             {
-                if (result[i] == '-')
+                switch (result[i])
                 {
-                    result.Remove(i, 1);
-                    i--;
+                    case '/':
+                    case '.':
+                        {
+                            turnToUpper = true;
+                        }
+                        break;
+                    case '-':
+                        {
+                            result.Remove(i, 1);
+                            i--;
 
-                    turnToUpper = true;
-                }
-                else if (turnToUpper)
-                {
-                    result[i] = Char.ToUpperInvariant(result[i]);
-                    turnToUpper = false;
+                            turnToUpper = true;
+                        }
+                        break;
+                    default: if (turnToUpper)
+                        {
+                            result[i] = Char.ToUpperInvariant(result[i]);
+                            turnToUpper = false;
+                        }
+                        break;
                 }
             }
             return result.ToString();
