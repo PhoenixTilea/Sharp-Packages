@@ -3,23 +3,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Sockets;
 using SE;
 
-namespace SE.Remoting.Udp
+namespace SE.Remoting.Tcp
 {
-    public partial class SocketBase<T> where T : SocketOptions, new()
+    public partial class Socket<T> where T : SocketOptions, new()
     {
         /// <summary>
         /// Passes this thread to the underlaying network layer until data was received
         /// </summary>
-        /// <param name="endPoint">The sender that has sent binary data</param>
         /// <param name="buffer">An array to copy binary data to</param>
         /// <param name="offset">An offset of which the array should be shifted</param>
         /// <param name="size">The capacity of bytes to be read</param>
         /// <returns>The amount of bytes that have been read into the array</returns>
-        public virtual int Receive(ref EndPoint endPoint, byte[] buffer, int offset, int size)
+        public virtual int Receive(byte[] buffer, int offset, int size)
         {
             if (!initialized || size == 0)
             {
@@ -27,19 +25,19 @@ namespace SE.Remoting.Udp
             }
             try
             {
-                int count = socket.ReceiveFrom(buffer, offset, size, SocketFlags.None, ref endPoint);
+                int count = socket.Receive(buffer, offset, size, SocketFlags.None);
                 if (count > 0)
                 {
                     stats.Received++;
                     stats.BytesReceived += count;
 
-                    OnReceive(endPoint as IPEndPoint, buffer, offset, count);
+                    OnReceive(buffer, offset, count);
                 }
                 return count;
             }
             catch (SocketException er)
             {
-                HandleIocpError(endPoint, er.SocketErrorCode);
+                HandleIocpError(er.SocketErrorCode);
                 return 0;
             }
             catch (ObjectDisposedException) 
@@ -50,12 +48,11 @@ namespace SE.Remoting.Udp
         /// <summary>
         /// Passes this thread to the underlaying network layer until data was received
         /// </summary>
-        /// <param name="endPoint">The sender that has sent binary data</param>
         /// <param name="buffer">An array to copy binary data to</param>
         /// <returns>The amount of bytes that have been read into the array</returns>
-        public int Receive(ref EndPoint endPoint, byte[] buffer)
+        public int Receive(byte[] buffer)
         {
-            return Receive(ref endPoint, buffer, 0, buffer.Length);
+            return Receive(buffer, 0, buffer.Length);
         }
 
         /// <summary>
@@ -70,9 +67,8 @@ namespace SE.Remoting.Udp
             }
             try
             {
-                asyncReceiveContext.RemoteEndPoint = endPoint;
                 asyncReceiveContext.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
-                if (!socket.ReceiveFromAsync(asyncReceiveContext))
+                if (!socket.ReceiveAsync(asyncReceiveContext))
                 {
                     OnAsyncReceiveCompleted(asyncReceiveContext);
                 }

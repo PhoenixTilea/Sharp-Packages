@@ -11,7 +11,7 @@ namespace SE.Remoting.Udp
     /// <summary>
     /// Defines a standard UDP socket
     /// </summary>
-    public class Socket : SocketBase
+    public class Socket : SocketBase<SocketOptions>
     {
         public Socket(IPEndPoint endPoint)
             : base(endPoint, new SocketOptions())

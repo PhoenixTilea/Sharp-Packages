@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using SE;
 
-namespace SE.Remoting.Udp
+namespace SE.Remoting.Tcp
 {
     public partial class SocketBase<T> where T : SocketOptions, new()
     {
@@ -43,7 +43,7 @@ namespace SE.Remoting.Udp
             public long Sent;
         }
 
-        SocketInfo stats;
+        protected internal SocketInfo stats;
         /// <summary>
         /// Provides statistics information about this socket
         /// </summary>

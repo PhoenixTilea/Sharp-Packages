@@ -12,7 +12,7 @@ namespace SE.Remoting.Udp
     /// <summary>
     /// Defines a multicast socket
     /// </summary>
-    public class MulticastSocket : SocketBase
+    public class MulticastSocket : SocketBase<SocketOptions>
     {
         public MulticastSocket(IPEndPoint endPoint)
             : base(endPoint, new SocketOptions())

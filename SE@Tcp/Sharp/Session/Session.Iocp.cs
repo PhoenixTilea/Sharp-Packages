@@ -4,24 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using SE;
 
-namespace SE.Remoting.Udp
+namespace SE.Remoting.Tcp
 {
-    public partial class SocketBase<T> where T : SocketOptions, new()
+    public partial class Session<T> where T : HostSocketOptions, new()
     {
         void HandleIocpEvent(object sender, SocketAsyncEventArgs e)
         {
             switch (e.LastOperation)
             {
-                case SocketAsyncOperation.ReceiveFrom:
+                case SocketAsyncOperation.Receive:
                     {
                         OnAsyncReceiveCompleted(e);
                     }
                     break;
-                case SocketAsyncOperation.SendTo:
+                case SocketAsyncOperation.Send:
                     {
                         OnAsyncSendCompleted(e);
                     }
@@ -33,7 +33,7 @@ namespace SE.Remoting.Udp
                     break;
             }
         }
-        void HandleIocpError(EndPoint endPoint, SocketError error)
+        void HandleIocpError(SocketError error)
         {
             switch (error)
             {
@@ -48,7 +48,7 @@ namespace SE.Remoting.Udp
                     break;
                 default:
                     {
-                        OnError(endPoint, error);
+                        host.OnError(this, error);
                     }
                     break;
             }
@@ -72,10 +72,14 @@ namespace SE.Remoting.Udp
                     stats.BytesReceived += size;
                     stats.Timestamp = Stopwatch.GetTimestamp();
 
-                    OnReceive(e.RemoteEndPoint, receiveBuffer, 0, size);
+                    Interlocked.Increment(ref host.stats.Received);
+                    Interlocked.Add(ref host.stats.BytesReceived, size);
+                    host.stats.Timestamp = stats.Timestamp;
+
+                    OnReceive(receiveBuffer, 0, size);
                 }
             }
-            else HandleIocpError(e.RemoteEndPoint, e.SocketError);
+            else HandleIocpError(e.SocketError);
         }
         /// <summary>
         /// Occures whenever an asynchronous send operation has returned
@@ -94,29 +98,19 @@ namespace SE.Remoting.Udp
                     stats.BytesSending = 0;
                     stats.BytesSent += size;
 
-                    OnSend(e.RemoteEndPoint, size);
+                    Interlocked.Increment(ref host.stats.Sent);
+                    Interlocked.Add(ref host.stats.BytesSent, size);
+
+                    OnSend(size);
                 }
             }
-            else HandleIocpError(e.RemoteEndPoint, e.SocketError);
+            else HandleIocpError(e.SocketError);
         }
         /// <summary>
         /// Occures whenever an asynchronous operation returns that is neither
         /// receive nor send
         /// </summary>
         protected virtual void OnAsyncCompleted(SocketAsyncEventArgs e)
-        { }
-
-        /// <summary>
-        /// A callback for whenever a peer has been opened in the udnerlaying
-        /// network layer
-        /// </summary>
-        protected virtual void OnCreated()
-        { }
-
-        /// <summary>
-        /// A callback for whenever this socket was initialized
-        /// </summary>
-        protected virtual void OnInitialize()
         { }
 
         /// <summary>
@@ -134,26 +128,17 @@ namespace SE.Remoting.Udp
         /// <summary>
         /// Occures whenever a receive operation successfully returnes
         /// </summary>
-        /// <param name="endpoint">The target that has sent binary data</param>
         /// <param name="buffer">A binary data buffer</param>
         /// <param name="offset">An offset the binary buffer was shifted by</param>
         /// <param name="size">The amount of bytes that have been copied</param>
-        protected virtual void OnReceive(EndPoint endpoint, byte[] buffer, int offset, int size)
+        protected virtual void OnReceive(byte[] buffer, int offset, int size)
         { }
 
         /// <summary>
         /// Occures whenever a send operation successfully returnes
         /// </summary>
-        /// <param name="endpoint">The target that was sent binary data</param>
         /// <param name="size">The amount of bytes that have been copied</param>
-        protected virtual void OnSend(EndPoint endpoint, int size)
-        { }
-
-        /// <summary>
-        /// Occures whenever a send operation successfully returnes
-        /// </summary>
-        /// <param name="endpoint">The target of the operation failed</param>
-        protected virtual void OnError(EndPoint endpoint, SocketError error)
+        protected virtual void OnSend(int size)
         { }
     }
 }

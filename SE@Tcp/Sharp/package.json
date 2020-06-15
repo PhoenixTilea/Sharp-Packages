@@ -1,13 +1,13 @@
 ﻿{
-    "name" : "@schroedingerentertainment/se.sharp.udp",
-    "description" : "Provides access to the UDP Protocol network layer",
-    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Udp/Sharp",
+    "name" : "@schroedingerentertainment/se.sharp.tcp",
+    "description" : "Provides access to the TCP Protocol network layer",
+    "homepage" : "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@Tcp/Sharp",
     "license" : "AGPL-3.0-or-later",
     "author" : {
         "name" : "Shaarigan",
         "url" : "https://github.com/Shaarigan"
     },
-    "version" : "1.0.1",
+    "version" : "1.0.0",
     "dependencies" : {
         "@schroedingerentertainment/se.sharp.common" : "^1.3.0"
     },
@@ -20,6 +20,6 @@
     "repository" : {
         "url" : "https://github.com/SchroedingerEntertainment/Sharp-Packages.git",
         "type" : "git",
-        "directory" : "SE@Udp/Sharp"
+        "directory" : "SE@Tcp/Sharp"
     }
 }

@@ -12,7 +12,7 @@ namespace SE.Remoting.Udp
     /// <summary>
     /// A base class for UDP driven operations on the udnerlaying network layer
     /// </summary>
-    public abstract partial class SocketBase : IDisposable
+    public abstract partial class SocketBase<T> : IDisposable where T : SocketOptions, new()
     {
         private readonly static IPEndPoint IPv4Any = new IPEndPoint(IPAddress.Any, 0);
         private readonly static IPEndPoint IPv6Any = new IPEndPoint(IPAddress.IPv6Any, 0);
@@ -77,10 +77,20 @@ namespace SE.Remoting.Udp
             get { return disposed; }
         }
 
+        T options;
+        /// <summary>
+        /// A collection of configuration parameters used when initializing
+        /// this socket
+        /// </summary>
+        public T Options
+        {
+            get { return options; }
+        }
+
         /// <summary>
         /// Initializes this socket with the given options
         /// </summary>
-        protected SocketBase(IPEndPoint endPoint, SocketOptions options)
+        protected SocketBase(IPEndPoint endPoint, T options)
         {
             this.endPoint = endPoint;
             this.options = options;
@@ -92,7 +102,7 @@ namespace SE.Remoting.Udp
         /// </summary>
         /// <param name="endPoint">The target this socket should be bound to</param>
         public SocketBase(IPEndPoint endPoint)
-            : this(endPoint, new SocketOptions())
+            : this(endPoint, new T())
         { }
         /// <summary>
         /// Creates a new socket instance 
@@ -100,7 +110,7 @@ namespace SE.Remoting.Udp
         /// <param name="address">The target IP this socket should be bound to</param>
         /// <param name="port">The target port number this socket should be bound to</param>
         public SocketBase(IPAddress address, int port)
-            : this(new IPEndPoint(address, port), new SocketOptions())
+            : this(new IPEndPoint(address, port), new T())
         { }
         /// <summary>
         /// Creates a new socket instance 
@@ -128,7 +138,7 @@ namespace SE.Remoting.Udp
         /// Opens a new peer on the underlaying network layer
         /// </summary>
         /// <returns>True if the peer was opened successfully, false otherwise</returns>
-        public virtual bool Initialize()
+        public virtual bool Open()
         {
             if (initialized)
                 return false;
@@ -209,7 +219,7 @@ namespace SE.Remoting.Udp
         public virtual bool Reset()
         {
             Close();
-            return Initialize();
+            return Open();
         }
 
         public void Dispose()
