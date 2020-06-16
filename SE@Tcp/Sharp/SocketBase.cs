@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using SE;
 
 namespace SE.Remoting.Tcp
@@ -114,6 +115,51 @@ namespace SE.Remoting.Tcp
                 }
                 disposed = true;
             }
+        }
+
+        /// <summary>
+        /// Opens a new peer on the underlaying network layer
+        /// </summary>
+        /// <param name="endPoint">The target, a socket should be bound to</param>
+        /// <param name="options">A set of parameters used to create the socket</param>
+        /// <param name="error">Contains the error code on failure</param>
+        /// <param name="socket">Contains the socket instance on success</param>
+        /// <returns>True if the peer was opened successfully, false otherwise</returns>
+        public static bool Create(IPEndPoint endPoint, SocketOptions options, out SocketError error, out System.Net.Sockets.Socket socket)
+        {
+            socket = new System.Net.Sockets.Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, options.ReuseAddress);
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ExclusiveAddressUse, options.ExclusiveAddressUse);
+            socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, !options.DualMode);
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, options.KeepAlive);
+            socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, options.NoDelay);
+
+            try
+            {
+                socket.Connect(endPoint);
+            }
+            catch (SocketException er)
+            {
+                error = er.SocketErrorCode;
+                try
+                {
+                    try
+                    {
+                        socket.Shutdown(SocketShutdown.Both);
+                    }
+                    catch (SocketException)
+                    { }
+
+                    socket.Close();
+                    socket.Dispose();
+                }
+                catch (ObjectDisposedException) { }
+                return false;
+            }
+
+            error = SocketError.Success;
+            return true;
         }
     }
 }

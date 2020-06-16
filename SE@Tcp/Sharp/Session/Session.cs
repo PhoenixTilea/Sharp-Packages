@@ -38,6 +38,15 @@ namespace SE.Remoting.Tcp
             get { return socket; }
         }
 
+        protected IPEndPoint endPoint;
+        /// <summary>
+        /// The target this session is associated with
+        /// </summary>
+        public IPEndPoint EndPoint
+        {
+            get { return endPoint; }
+        }
+
         bool initialized;
         /// <summary>
         /// Determines if this socket has been initialized
@@ -90,6 +99,7 @@ namespace SE.Remoting.Tcp
         {
             this.host = host;
             this.socket = remoteTarget;
+            this.endPoint = remoteTarget.RemoteEndPoint as IPEndPoint;
 
             if (receiveBuffer == null)
             {
