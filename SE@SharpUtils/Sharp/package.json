@@ -1,0 +1,26 @@
+{
+  "name": "@schroedingerentertainment/se.sharp.sharputils",
+  "description": "Utility module for the C# language",
+  "homepage": "https://github.com/SchroedingerEntertainment/Sharp-Packages/tree/master/SE@SharpUtils/Sharp",
+  "license": "AGPL-3.0-or-later",
+  "author": {
+    "name": "Tilea",
+    "url": "https://github.com/PhoenixTilea"
+  },
+  "version": "1.1.0",
+  "dependencies": {
+    "@schroedingerentertainment/se.sharp.common": "^1.1.0",
+    "@schroedingerentertainment/se.sharp.parsing": "^1.1.0"
+  },
+  "keywords": [
+    "c#",
+    "csharp",
+    "sharp",
+    "module"
+  ],
+  "repository": {
+    "url": "https://github.com/SchroedingerEntertainment/Sharp-Packages.git",
+    "type": "git",
+    "directory": "SE@SharpUtils/Sharp"
+  }
+}
