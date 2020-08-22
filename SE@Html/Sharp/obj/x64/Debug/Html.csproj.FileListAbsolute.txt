@@ -1,0 +1,2 @@
+C:\Users\phoen\Documents\Development\Forge\Packages\SE@Html\Sharp\obj\x64\Debug\Html.csprojAssemblyReference.cache
+C:\Users\phoen\Documents\Development\Forge\Packages\SE@Html\Sharp\obj\x64\Debug\Html.csproj.CoreCompileInputs.cache

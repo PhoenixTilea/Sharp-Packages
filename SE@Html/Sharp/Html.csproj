@@ -1,0 +1,489 @@
+<Project ToolsVersion="16.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{843B1734-B064-447B-94D6-C0556DAAAA70}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SE.Text.Html</RootNamespace>
+    <AssemblyName>Html</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <OutputPath>..\..\..\Deploy\</OutputPath>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <Optimize>False</Optimize>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <Optimize>True</Optimize>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineConstants></DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Dom\IDomNode.cs" />
+    <Compile Include="Dom\DoctypeNode.cs" />
+    <Compile Include="Elements\Article.cs" />
+    <Compile Include="Elements\A.cs" />
+    <Compile Include="Elements\Abbr.cs" />
+    <Compile Include="Elements\Address.cs" />
+    <Compile Include="Elements\Aside.cs" />
+    <Compile Include="Dom\HtmlDocument.cs" />
+    <Compile Include="Elements\Audio.cs" />
+    <Compile Include="Dom\DataNode.cs" />
+    <Compile Include="Dom\CommentNode.cs" />
+    <Compile Include="Elements\Blockquote.cs" />
+    <Compile Include="Elements\Body.cs" />
+    <Compile Include="Elements\B.cs" />
+    <Compile Include="Elements\Button.cs" />
+    <Compile Include="Elements\Canvas.cs" />
+    <Compile Include="Elements\Caption.cs" />
+    <Compile Include="Elements\Center.cs" />
+    <Compile Include="Elements\Cite.cs" />
+    <Compile Include="Elements\Col.cs" />
+    <Compile Include="Elements\Bdi.cs" />
+    <Compile Include="Elements\Colgroup.cs" />
+    <Compile Include="Elements\Command.cs" />
+    <Compile Include="Elements\Data.cs" />
+    <Compile Include="Elements\Datalist.cs" />
+    <Compile Include="Elements\Bdo.cs" />
+    <Compile Include="Elements\Details.cs" />
+    <Compile Include="Elements\Dfn.cs" />
+    <Compile Include="Dom\TextNode.cs" />
+    <Compile Include="Elements\Dialog.cs" />
+    <Compile Include="Elements\Base.cs" />
+    <Compile Include="Elements\Dd.cs" />
+    <Compile Include="Elements\Dl.cs" />
+    <Compile Include="Elements\Dt.cs" />
+    <Compile Include="Elements\Em.cs" />
+    <Compile Include="Elements\Embed.cs" />
+    <Compile Include="Elements\Figcaption.cs" />
+    <Compile Include="Elements\Figure.cs" />
+    <Compile Include="Elements\Fieldset.cs" />
+    <Compile Include="Elements\Footer.cs" />
+    <Compile Include="Elements\ForeignObject.cs" />
+    <Compile Include="Elements\Form.cs" />
+    <Compile Include="Elements\Frame.cs" />
+    <Compile Include="Elements\Frameset.cs" />
+    <Compile Include="Elements\H2.cs" />
+    <Compile Include="Elements\H3.cs" />
+    <Compile Include="Elements\H4.cs" />
+    <Compile Include="Elements\H1.cs" />
+    <Compile Include="Elements\H5.cs" />
+    <Compile Include="Elements\H6.cs" />
+    <Compile Include="Elements\Head.cs" />
+    <Compile Include="Elements\Header.cs" />
+    <Compile Include="Elements\Hr.cs" />
+    <Compile Include="Elements\I.cs" />
+    <Compile Include="Elements\Html.cs" />
+    <Compile Include="Elements\Img.cs" />
+    <Compile Include="Elements\IFrame.cs" />
+    <Compile Include="Elements\Input.cs" />
+    <Compile Include="Dom\ElementNode.cs" />
+    <Compile Include="Elements\Ins.cs" />
+    <Compile Include="Elements\Area.cs" />
+    <Compile Include="Elements\Dir.cs" />
+    <Compile Include="Elements\Li.cs" />
+    <Compile Include="Elements\Div.cs" />
+    <Compile Include="Elements\Del.cs" />
+    <Compile Include="Elements\Kbd.cs" />
+    <Compile Include="Elements\Legend.cs" />
+    <Compile Include="Elements\Main.cs" />
+    <Compile Include="Elements\Label.cs" />
+    <Compile Include="Elements\Mark.cs" />
+    <Compile Include="Elements\Meta.cs" />
+    <Compile Include="Elements\Me.cs" />
+    <Compile Include="Elements\Meter.cs" />
+    <Compile Include="Elements\Mn.cs" />
+    <Compile Include="Elements\Mo.cs" />
+    <Compile Include="Elements\Ms.cs" />
+    <Compile Include="Elements\Mtext.cs" />
+    <Compile Include="Elements\Noframes.cs" />
+    <Compile Include="Elements\Noscript.cs" />
+    <Compile Include="Elements\Ol.cs" />
+    <Compile Include="Elements\Optgroup.cs" />
+    <Compile Include="Elements\Nav.cs" />
+    <Compile Include="Elements\Listing.cs" />
+    <Compile Include="Elements\Option.cs" />
+    <Compile Include="Elements\Output.cs" />
+    <Compile Include="Elements\P.cs" />
+    <Compile Include="Elements\Param.cs" />
+    <Compile Include="Elements\Pre.cs" />
+    <Compile Include="Elements\Progress.cs" />
+    <Compile Include="Elements\Rb.cs" />
+    <Compile Include="Elements\Object.cs" />
+    <Compile Include="Elements\Math.cs" />
+    <Compile Include="Elements\Picture.cs" />
+    <Compile Include="Elements\Rt.cs" />
+    <Compile Include="Elements\Rtc.cs" />
+    <Compile Include="Elements\S.cs" />
+    <Compile Include="Elements\Samp.cs" />
+    <Compile Include="Elements\Script.cs" />
+    <Compile Include="Elements\Select.cs" />
+    <Compile Include="Elements\Slot.cs" />
+    <Compile Include="Elements\Section.cs" />
+    <Compile Include="Elements\Small.cs" />
+    <Compile Include="Elements\Source.cs" />
+    <Compile Include="Elements\Span.cs" />
+    <Compile Include="Elements\Strong.cs" />
+    <Compile Include="Elements\Style.cs" />
+    <Compile Include="Elements\Summary.cs" />
+    <Compile Include="Elements\Sup.cs" />
+    <Compile Include="Elements\Svg.cs" />
+    <Compile Include="Elements\Table.cs" />
+    <Compile Include="Elements\Sub.cs" />
+    <Compile Include="Elements\Tbody.cs" />
+    <Compile Include="Elements\Td.cs" />
+    <Compile Include="Elements\Template.cs" />
+    <Compile Include="Elements\Br.cs" />
+    <Compile Include="Elements\TextArea.cs" />
+    <Compile Include="Elements\Tfoot.cs" />
+    <Compile Include="Elements\Thead.cs" />
+    <Compile Include="Elements\Code.cs" />
+    <Compile Include="Elements\Th.cs" />
+    <Compile Include="Elements\Time.cs" />
+    <Compile Include="Elements\Track.cs" />
+    <Compile Include="Elements\U.cs" />
+    <Compile Include="Elements\Link.cs" />
+    <Compile Include="Elements\Ul.cs" />
+    <Compile Include="Elements\Wbr.cs" />
+    <Compile Include="Elements\Video.cs" />
+    <Compile Include="Elements\Tr.cs" />
+    <Compile Include="Parser\HtmlParser.Errors.cs" />
+    <Compile Include="Parser\HtmlParser.Fsm.cs" />
+    <Compile Include="Parser\Quirks.cs" />
+    <Compile Include="Tokenizer\HtmlToken.cs" />
+    <Compile Include="Parser\HtmlParserState.cs" />
+    <Compile Include="Elements\Rp.cs" />
+    <Compile Include="Tokenizer\HtmlMetaData.cs" />
+    <Compile Include="Elements\HtmlElement.cs" />
+    <Compile Include="Elements\Map.cs" />
+    <Compile Include="Elements\Title.cs" />
+    <Compile Include="Elements\Var.cs" />
+    <Compile Include="Parser\HtmlParser.cs" />
+    <Compile Include="Elements\Ruby.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.Comment.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizerState.cs" />
+    <Compile Include="ElementAttribute.cs" />
+    <Compile Include="Parser\HtmlParser.Nodes.cs" />
+    <Compile Include="ElementCache.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.RawText.cs" />
+    <Compile Include="Parser\HtmlParser.algorithm.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.RCData.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.Data.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.Utility.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.Doctype.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.Attribute.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.Tag.cs" />
+    <Compile Include="HtmlEncoding.cs" />
+    <Compile Include="Tokenizer\HtmlTokenizer.Script.cs" />
+    <Compile Include="Parser\HtmlParser.Modes.cs" />
+    <Compile Include="HtmlEncoding.Generated.cs" />
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Binary\Binary.IsNullOrEmpty.cs">
+      <Link>Modules\Common\Extensions\Binary\Binary.IsNullOrEmpty.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Assembly\AssemblyGetResourceStream.cs">
+      <Link>Modules\Common\Extensions\Assembly\AssemblyGetResourceStream.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\StreamBuffer.cs">
+      <Link>Modules\Common\Extensions\StreamBuffer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Encoding\Base34.cs">
+      <Link>Modules\Common\Encoding\Base34.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Enumerable\Enumerable.Clone.cs">
+      <Link>Modules\Common\Extensions\Enumerable\Enumerable.Clone.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Collection\Collection.TryGetIndex.cs">
+      <Link>Modules\Common\Extensions\Collection\Collection.TryGetIndex.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Binary\Binary.Equals.cs">
+      <Link>Modules\Common\Extensions\Binary\Binary.Equals.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Quicksort.cs">
+      <Link>Modules\Common\Extensions\Quicksort.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Collection\Collection.AddFormatted.cs">
+      <Link>Modules\Common\Extensions\Collection\Collection.AddFormatted.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Fnv\Fnv.cs">
+      <Link>Modules\Common\Extensions\Fnv\Fnv.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Fnv\Fnv16.cs">
+      <Link>Modules\Common\Extensions\Fnv\Fnv16.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Pointer.cs">
+      <Link>Modules\Common\Extensions\Pointer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Integer\Integer.MaxValue.cs">
+      <Link>Modules\Common\Extensions\Integer\Integer.MaxValue.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Integer\Integer.Count.cs">
+      <Link>Modules\Common\Extensions\Integer\Integer.Count.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Integer\Integer.Clamp.cs">
+      <Link>Modules\Common\Extensions\Integer\Integer.Clamp.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Object\Object.ToPointer.cs">
+      <Link>Modules\Common\Extensions\Object\Object.ToPointer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Enumerable\Enumerable.GetCombinations.cs">
+      <Link>Modules\Common\Extensions\Enumerable\Enumerable.GetCombinations.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\IntPtr\IntPtr.ToInstance.cs">
+      <Link>Modules\Common\Extensions\IntPtr\IntPtr.ToInstance.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Enumerable\Enumerable.GetPermutations.cs">
+      <Link>Modules\Common\Extensions\Enumerable\Enumerable.GetPermutations.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Enumerable\Enumerable.Swap.cs">
+      <Link>Modules\Common\Extensions\Enumerable\Enumerable.Swap.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Integer\Integer.Align.cs">
+      <Link>Modules\Common\Extensions\Integer\Integer.Align.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Integer\Integer.Shift.cs">
+      <Link>Modules\Common\Extensions\Integer\Integer.Shift.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Reflection\Reflection.Attribute.cs">
+      <Link>Modules\Common\Extensions\Reflection\Reflection.Attribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Enumerable\Enumerable.IsEqual.cs">
+      <Link>Modules\Common\Extensions\Enumerable\Enumerable.IsEqual.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Reflection\Reflection.Field.cs">
+      <Link>Modules\Common\Extensions\Reflection\Reflection.Field.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Fnv\Fnv32.cs">
+      <Link>Modules\Common\Extensions\Fnv\Fnv32.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Reflection\Reflection.Property.cs">
+      <Link>Modules\Common\Extensions\Reflection\Reflection.Property.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Reflection\Reflection.Type.cs">
+      <Link>Modules\Common\Extensions\Reflection\Reflection.Type.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Stream\Stream.Eof.cs">
+      <Link>Modules\Common\Extensions\Stream\Stream.Eof.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Stream\Stream.Put.cs">
+      <Link>Modules\Common\Extensions\Stream\Stream.Put.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Reflection\Reflection.Instanciate.cs">
+      <Link>Modules\Common\Extensions\Reflection\Reflection.Instanciate.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Stream\Stream.Peek.cs">
+      <Link>Modules\Common\Extensions\Stream\Stream.Peek.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Stream\Stream.GetBuffer.cs">
+      <Link>Modules\Common\Extensions\Stream\Stream.GetBuffer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\String\String.ToCase.cs">
+      <Link>Modules\Common\Extensions\String\String.ToCase.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\StringBuilder\StringBuilder.IsEqual.cs">
+      <Link>Modules\Common\Extensions\StringBuilder\StringBuilder.IsEqual.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\String\String.ToHex.cs">
+      <Link>Modules\Common\Extensions\String\String.ToHex.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Reflection\Reflection.Method.cs">
+      <Link>Modules\Common\Extensions\Reflection\Reflection.Method.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\String\String.TrimStart.cs">
+      <Link>Modules\Common\Extensions\String\String.TrimStart.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Stream\Stream.Read.cs">
+      <Link>Modules\Common\Extensions\Stream\Stream.Read.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Pooling\IPoolingPolicy.cs">
+      <Link>Modules\Common\Pooling\IPoolingPolicy.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Integer\Integer.NextPowerOfTwo.cs">
+      <Link>Modules\Common\Extensions\Integer\Integer.NextPowerOfTwo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Pooling\CollectionPolicy.cs">
+      <Link>Modules\Common\Pooling\CollectionPolicy.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Pooling\CollectionPool.cs">
+      <Link>Modules\Common\Pooling\CollectionPool.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Pooling\ObjectPolicy.cs">
+      <Link>Modules\Common\Pooling\ObjectPolicy.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Hash\HashCombiner.cs">
+      <Link>Modules\Common\Hash\HashCombiner.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Pooling\StackPolicy.cs">
+      <Link>Modules\Common\Pooling\StackPolicy.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Pooling\StackPool.cs">
+      <Link>Modules\Common\Pooling\StackPool.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Reflection\Reflection.Access.cs">
+      <Link>Modules\Common\Extensions\Reflection\Reflection.Access.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Enumerable\Enumerable.ConvertTo.cs">
+      <Link>Modules\Common\Extensions\Enumerable\Enumerable.ConvertTo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Threading\LockScope.cs">
+      <Link>Modules\Common\Threading\LockScope.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Stream\Stream.Get.cs">
+      <Link>Modules\Common\Extensions\Stream\Stream.Get.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Resources\ResourceDescriptor.IO.cs">
+      <Link>Modules\Common\Resources\ResourceDescriptor.IO.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Threading\ReadScope.cs">
+      <Link>Modules\Common\Threading\ReadScope.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Endianess.cs">
+      <Link>Modules\Common\Extensions\Endianess.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Resources\ResourceDescriptor.cs">
+      <Link>Modules\Common\Resources\ResourceDescriptor.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Threading\WriteScope.cs">
+      <Link>Modules\Common\Threading\WriteScope.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Pooling\ObjectPool.cs">
+      <Link>Modules\Common\Pooling\ObjectPool.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\String\String.GetDistance.cs">
+      <Link>Modules\Common\Extensions\String\String.GetDistance.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Threading\ThreadContext.cs">
+      <Link>Modules\Common\Threading\ThreadContext.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Threading\Spinlock.cs">
+      <Link>Modules\Common\Threading\Spinlock.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Type\Type.Size.cs">
+      <Link>Modules\Common\Extensions\Type\Type.Size.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Threading\ReadWriteLock.cs">
+      <Link>Modules\Common\Threading\ReadWriteLock.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\String\String.GetCommon.cs">
+      <Link>Modules\Common\Extensions\String\String.GetCommon.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\DataPath.cs">
+      <Link>Modules\Common\DataPath.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Resources\ResourceManager.cs">
+      <Link>Modules\Common\Resources\ResourceManager.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Threading\IScopeable.cs">
+      <Link>Modules\Common\Threading\IScopeable.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\CircularBuffer.cs">
+      <Link>Modules\Common\CircularBuffer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Hash\FastHash.cs">
+      <Link>Modules\Common\Hash\FastHash.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Extensions\Reflection\Reflection.Delegate.cs">
+      <Link>Modules\Common\Extensions\Reflection\Reflection.Delegate.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Common\Sharp\Threading\Atomic.cs">
+      <Link>Modules\Common\Threading\Atomic.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Common\AcyclicGraphEdge.cs">
+      <Link>Modules\Parsing\Common\AcyclicGraphEdge.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Extensions\TernaryTreeNode\TernaryTreeNode.Get.cs">
+      <Link>Modules\Parsing\Extensions\TernaryTreeNode\TernaryTreeNode.Get.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Common\TernaryTreeNode.cs">
+      <Link>Modules\Parsing\Common\TernaryTreeNode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Extensions\TernaryTreeNode\TernaryTreeNode.ForEach.cs">
+      <Link>Modules\Parsing\Extensions\TernaryTreeNode\TernaryTreeNode.ForEach.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Parser\ProductionState.cs">
+      <Link>Modules\Parsing\Parser\ProductionState.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Tokenizer\StreamTokenizer.Tokens.cs">
+      <Link>Modules\Parsing\Tokenizer\StreamTokenizer.Tokens.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Common\AcyclicGraph.cs">
+      <Link>Modules\Parsing\Common\AcyclicGraph.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Tokenizer\StreamTokenizer.Text.cs">
+      <Link>Modules\Parsing\Tokenizer\StreamTokenizer.Text.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Tokenizer\StreamTokenizer.Utility.cs">
+      <Link>Modules\Parsing\Tokenizer\StreamTokenizer.Utility.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Tokenizer\StreamTokenizer.cs">
+      <Link>Modules\Parsing\Tokenizer\StreamTokenizer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Tokenizer\ComparisonState.cs">
+      <Link>Modules\Parsing\Tokenizer\ComparisonState.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Utf8\Char32.Defines.cs">
+      <Link>Modules\Parsing\Utf8\Char32.Defines.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Parser\TreeBuilder.Parsing.cs">
+      <Link>Modules\Parsing\Parser\TreeBuilder.Parsing.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Extensions\TernaryTreeNode\TernaryTreeNode.TryGet.cs">
+      <Link>Modules\Parsing\Extensions\TernaryTreeNode\TernaryTreeNode.TryGet.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Utf8\Char32.cs">
+      <Link>Modules\Parsing\Utf8\Char32.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Extensions\TernaryTreeNode\TernaryTreeNode.Remove.cs">
+      <Link>Modules\Parsing\Extensions\TernaryTreeNode\TernaryTreeNode.Remove.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Extensions\TernaryTreeNode\TernaryTreeNode.Append.cs">
+      <Link>Modules\Parsing\Extensions\TernaryTreeNode\TernaryTreeNode.Append.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\ProcessingState.cs">
+      <Link>Modules\Parsing\ProcessingState.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\TextPointer.cs">
+      <Link>Modules\Parsing\TextPointer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Parser\TreeBuilder.cs">
+      <Link>Modules\Parsing\Parser\TreeBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Utf8\Char32.Static.cs">
+      <Link>Modules\Parsing\Utf8\Char32.Static.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\Common\TernaryTree.cs">
+      <Link>Modules\Parsing\Common\TernaryTree.cs</Link>
+    </Compile>
+    <Compile Include="..\..\SE@Parsing\Sharp\StreamBuffer.cs">
+      <Link>Modules\Parsing\StreamBuffer.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.8'))))">$(DefineConstants);NETFRAMEWORK4_8;NETFRAMEWORK;net48</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.7.2'))))">$(DefineConstants);NETFRAMEWORK4_7_2;NETFRAMEWORK;net472</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.7.1'))))">$(DefineConstants);NETFRAMEWORK4_7_1;NETFRAMEWORK;net471</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.7'))))">$(DefineConstants);NETFRAMEWORK4_7;NETFRAMEWORK;net47</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.6.2'))))">$(DefineConstants);NETFRAMEWORK4_6_2;NETFRAMEWORK;net462</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.6.1'))))">$(DefineConstants);NETFRAMEWORK4_6_1;NETFRAMEWORK;net461</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.6'))))">$(DefineConstants);NETFRAMEWORK4_6;NETFRAMEWORK;net46</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.5.2'))))">$(DefineConstants);NETFRAMEWORK4_5_2;NETFRAMEWORK;net452</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.5.1'))))">$(DefineConstants);NETFRAMEWORK4_5_1;NETFRAMEWORK;net451</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.5'))))">$(DefineConstants);NETFRAMEWORK4_5;NETFRAMEWORK;net45</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').Equals($([System.Version]::Parse('4.0'))))">$(DefineConstants);NETFRAMEWORK4_0;NETFRAMEWORK;net40</DefineConstants>
+  </PropertyGroup>
+</Project>
